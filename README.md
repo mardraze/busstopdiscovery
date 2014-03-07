@@ -8,7 +8,7 @@ osm2mysql file.osm region_name
 Database connection config is in /apps/importer/insert.php file. 
 
 Mysql table schema
-
+<pre>
 CREATE TABLE `positions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `osm_id` varchar(32) NOT NULL,
@@ -24,3 +24,4 @@ CREATE TABLE `positions` (
   `region` varchar(32) NOT NULL,
   PRIMARY KEY (`id`)
 );
+</pre>
