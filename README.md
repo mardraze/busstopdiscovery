@@ -1,11 +1,16 @@
 busstopdiscovery
 ================
 
-1. Importer
-Usage:
+<h2>Importer</h2>
+<h3>Usage: /apps/importer/osm2mysql.sh</h3>
+<pre>
 osm2mysql file.osm region_name
+</pre>
+<br/>
 
-Database connection config is in /apps/importer/insert.php file. 
+Database connection config is in <b>/apps/importer/insert.php
+
+<br/>
 
 Mysql table schema
 <pre>
