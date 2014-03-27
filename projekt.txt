@@ -1,0 +1,60 @@
+1. Aplikacja mobilna
+1.1 Dane
+1.1.1 Lista przystanków użytkownika
+1.1.2 Grupy przystanków (regiony)
+1.1.3 Grupy przystanków (listy użytkowników)
+1.1.4 Pozycja użytkownika
+1.1.5 Przystanek:
+- ID instancji przystanku
+- ID przystanku
+- Nazwa
+- pozycja GEO
+- rating przystanku
+- ilość korzystających użytkowników
+- region
+- autor
+- lista odjazdów
+1.1.6 Odjazd
+- rating odjazdu
+- godzina
+- numer linii
+1.1.7 Użytkownik
+- ID
+- email
+- hasło
+- lista przystanków
+- nick
+- zdjęcie (link)
+- regiony (dump)
+- imię
+- nazwisko
+- registered
+- tmp_hash
+- lista ID ocenionych przystanków (dump)
+- ilość przystanków użytkownika z którego korzystają inni (rating użytkownika)
+
+1.2 Operacje
+1.2.1 Aktualizacja pozycji użytkownika
+1.2.2 Sortowanie listy użytkownika po zmianie pozycji
+1.2.3 Wyszukiwanie przystanków z listy użytkownika
+1.2.4 Przeglądanie przystanków z regionu
+1.2.5 Dodawanie przystanków z regionu do listy
+1.2.6 Wyszukiwanie użytkowników
+1.2.7 Przeglądanie listy użytkowników
+1.2.8 Dodawanie przystanków z list użytkowników zewnętrznych
+1.2.9 Dodawanie konkurencyjnego przystanku
+1.2.10 Dodawanie nowego przystanku
+1.2.11 Usuwanie własnego przystanku
+1.2.12 Synchronizacja danych z serwerem dla użytkowników zarejestrowanych
+1.2.13 Tworzenie nowego anonimowego konta
+1.2.14 Rejestracja konta
+
+1.3 Widoki
+1.3.1 Przystanek
+1.3.2 Region
+1.3.3 Mapa
+1.3.4 Szczegóły przystanku, linie
+1.3.5 Szczegóły linii
+1.3.6 Edycja szczegółów przystanku
+1.3.7 Dodawanie przystanku
+1.3.8 Wyszukiwarka użytkowników
