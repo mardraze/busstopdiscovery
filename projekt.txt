@@ -48,6 +48,8 @@
 1.2.12 Synchronizacja danych z serwerem dla użytkowników zarejestrowanych
 1.2.13 Tworzenie nowego anonimowego konta
 1.2.14 Rejestracja konta
+1.2.15 Logowanie w celu ściągnięcia danych
+1.2.16 Pobieranie pliku mapy
 
 1.3 Widoki
 1.3.1 Przystanek
@@ -58,3 +60,14 @@
 1.3.6 Edycja szczegółów przystanku
 1.3.7 Dodawanie przystanku
 1.3.8 Wyszukiwarka użytkowników
+
+1.4 Komunikacja
+1.4.1 Amf
+1.4.2 Email
+1.4.3 Http
+
+1.5 Serwer
+1.5.1 PHP
+1.5.2 Mysql
+1.5.3 Generator plików mapy
+
