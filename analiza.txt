@@ -1,0 +1,26 @@
+1. Użytkownik po uruchomieniu aplikacji widzi najbliższy przystanek z podanymi godzinami odjazdów uwzględniając aktualną pozycję użytkownika oraz czas. 
+2. Użytkownik zarejestrowany może dodawać i korygować godziny odjazdów w wyświetlonym przystanku.
+3. Użytkownik zarejestrowany może dodawać i korygować pozycję wyświetlonego przystanku. Korekta polega na dodaniu konkurencyjnej wersji przystanku własnego autorstwa.
+4. Wszystkie dane są dostępne publicznie
+5. Użytkownik ma listę swoich przystanków, które mu się wyświetlają
+6. Użytkownikowi po pierwszym uruchomieniu pojawia się najbliższy przystanek z zachętą do dodania tego przystanku do swojej listy
+7. Użytkownik może zmieniać wyświetlany przystanek za pomocą prostych ruchów. Przystanki są z listy użytkownika oraz pojawiają się w kolejności wg odległości geograficznej od własnej pozycji.
+8. Jest możliwość łatwego powrotu do najbliższego przystanku (pierwszego na liście).
+9. Jest możliwość wyszukania przystanku na swojej liście.
+10. Jest możliwość wyszukania przystanku w celu dodania go do listy. Jest podział na regiony. Domyślnie jest najbliższy region, jest możliwość wyboru regionu przyległego, widoku województwa i widoku kraju.
+11. Jest możliwość wyświetlenia na mapie wyświetlonego przystanku, na mapie jest również pozycja użytkownika wraz z najkrótszą drogą do przystanku (linia prosta). Mapa obraca się wykorzystując kompas.
+12. Odjazdy i pozycja przystanku mają rating, przy dodawaniu przystanku spoza listy wyświetlane są przystanki w kolejności sumarycznego ratingu wszystkich odjazdów z danego przystanku, ratingu jego pozycji oraz ilości korzystających użytkowników z tego przystanku.
+13. W widoku wyświetlanego przystanku jest możliwość oceny odjazdu oraz pozycji przystanku (+/-). Oddzielnie każdy odjazd oraz pozycja przystanku. Jest możliwość dodania +/- dla wszystkich godzin na raz (np kiedy nic się nie zgadza albo wszystko się zgadza)
+14. Rating odjazdu/pozycji jest wyświetlany po wybraniu opcji 'zobacz rating'
+15. Wszystkie dane przystanku mają 1 autora
+16. Użytkownik posiada nick który może podać w ustawieniach konta. Może również podać swoje zdjęcie oraz swoje dane.
+17. Użytkownik może dodawać nowe/zmieniać punkty tylko jeśli poda adres email oraz potwierdzi go linkiem aktywującym, wtedy staje się użytkownikiem zarejestrowanym.
+18. Użytkownik może oceniać bez ograniczeń
+19. Użytkownicy mają ID które jest przechowywane w lokalnej bazie danych telefonu, razem z resztą danych (oceny, lista)
+20. ID użytkownika służy do identyfikowania które dane już zostały przez użytkownika ocenione oraz do pobrania listy przystanków.
+21. Jest możliwość dodania do swojej listy przystanków - list innych użytkowników
+22. Dane wszystkich użytkowników są magazynowane w lokalnej bazie danych telefonu
+23. Dane użytkowników zarejestrowanych są magazynowane na zewnętrznym serwerze.
+24. Zarabiamy na reklamach pojawiających się miedzy widokami oraz ofertami przewoźników.
+25. Aplikacja jest na wszystkie platformy mobilne, jest również wersja na stronie WWW.
+
