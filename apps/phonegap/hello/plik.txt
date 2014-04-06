@@ -1,0 +1,2 @@
+'"D:\Program_x86\Java\jdk1.6.0_37\bin\java.exe -Xmx512m"' is not recognized as an internal or external command,
+operable program or batch file.
