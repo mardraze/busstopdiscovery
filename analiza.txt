@@ -9,9 +9,9 @@
 9. Jest możliwość wyszukania przystanku na swojej liście.
 10. Jest możliwość wyszukania przystanku w celu dodania go do listy. Jest podział na regiony. Domyślnie jest najbliższy region, jest możliwość wyboru regionu przyległego, widoku województwa i widoku kraju.
 11. Jest możliwość wyświetlenia na mapie wyświetlonego przystanku, na mapie jest również pozycja użytkownika wraz z najkrótszą drogą do przystanku (linia prosta). Mapa obraca się wykorzystując kompas.
-12. Odjazdy i pozycja przystanku mają rating, przy dodawaniu przystanku spoza listy wyświetlane są przystanki w kolejności sumarycznego ratingu wszystkich odjazdów z danego przystanku, ratingu jego pozycji oraz ilości korzystających użytkowników z tego przystanku.
-13. W widoku wyświetlanego przystanku jest możliwość oceny odjazdu oraz pozycji przystanku (+/-). Oddzielnie każdy odjazd oraz pozycja przystanku. Jest możliwość dodania +/- dla wszystkich godzin na raz (np kiedy nic się nie zgadza albo wszystko się zgadza)
-14. Rating odjazdu/pozycji jest wyświetlany po wybraniu opcji 'zobacz rating'
+12. Każdy przystanek ma rating, przy dodawaniu przystanku spoza listy wyświetlane są przystanki w kolejności ratingu oraz ilości korzystających użytkowników z tego przystanku.
+13. W widoku wyświetlanego przystanku jest możliwość oceny przystanku (+/-)
+14. Rating przystanku jest wyświetlany po wybraniu opcji 'zobacz rating'
 15. Wszystkie dane przystanku mają 1 autora
 16. Użytkownik posiada nick który może podać w ustawieniach konta. Może również podać swoje zdjęcie oraz swoje dane.
 17. Użytkownik może dodawać nowe/zmieniać punkty tylko jeśli poda adres email oraz potwierdzi go linkiem aktywującym, wtedy staje się użytkownikiem zarejestrowanym.
