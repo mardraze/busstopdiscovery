@@ -115,6 +115,7 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r.list = [];
+	//LISTA USERA JEST ZAŁADOWANA
 	$(document).on(BusStopProxy.USER_LIST_LOADED, _r._onUserListLoaded);
 	return _r;
 })();
