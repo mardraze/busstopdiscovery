@@ -16,18 +16,19 @@ var APP = APP || (function () {
 			}
 		}
 		$(document).on(LocalStorage.INITIALIZED, function(){
-			BusStopProxy.loadList(APP.userId);
-			UpdatePositionController.run();
+			ServerStorage.init('http://localhost/projekty/inzynierka/busstopdiscovery/apps/serverStorage', function(){
+				UpdatePositionController.run();
+				BusStopView.show();
+			});
 		});
-		_r._setupLocalStorage();
+		_r._setupStorage();
 	};
 	
-	_r._setupLocalStorage = function(){
+	_r._setupStorage = function(){
 		var tables = {
 			'BusStop' : ['user_id', 'lon', 'lat', 'name'],
 		};
-		if(undefined != localStorage){
-			console.log('APP::_setupLocalStorage => WebLocalStorage');
+		if(undefined != localStorage || true){
 			//HTML5 LocalStorage
 			LocalStorage.initWeb(tables);
 		}else if(undefined != window.openDatabase){
@@ -44,12 +45,70 @@ var APP = APP || (function () {
 		}else{
 			console.log('Ajax Storage');
 			//Ajax storage
-			LocalStorage.initAjax('http://localhost/projekty/storage');
+			LocalStorage.initAjax('http://localhost/projekty/localStorage');
 		}
+		
+		
+		
+		
 	};
 
 	return _r;
 })();
+/**
+*@namespace 
+*/
+
+
+/**
+* 
+* 
+* @author Marten Olgaard
+* @created 4/4/2014
+* @copyright Adnuvo
+* @todo 
+* @class BusStopController
+* @static
+*/
+var BusStopController = BusStopController || (function () {
+
+	var _r = new Object();
+	
+	_r.searchNearest = function(onDone){
+		
+		BusStopProxy.getList({region: RegionController.currentRegion}, {limit_start: 0, limit_count: 10}, function(data){
+			
+			onDone(data.success && data.count ? data.data : {});
+		});
+	};
+	
+	$(document).ready(function(){
+		
+	});
+	
+	return _r;
+})();
+
+var RegionController = RegionController || (function () {
+
+	var _r = new Object();
+
+	_r.currentRegion = 'gdansk';
+	_r.perPage = 10;
+	
+	_r.searchNearest = function(onDone){
+		BusStopProxy.getList({region: RegionController.currentRegion}, function(list){
+			onDone(list);
+		});
+	};
+	
+	$(document).ready(function(){
+		RegionController.currentRegion = 'gdansk';//TODO 
+	});
+	
+	return _r;
+})();
+
 /**
 *@namespace 
 */
@@ -140,101 +199,57 @@ var UpdatePositionController = UpdatePositionController || (function () {
 	return _r;
 })();
 
-/**
-*@namespace 
-*/
+var UserListController = UserListController || (function () {
 
+	var _r = new Object();
 
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class BusStopProxy
-* @static
-*/
+	_r.addToList = function(id){
+		console.log('UserListController.addToList', id);
+		UserBusStopProxy.getOne(id, function(row){
+			if(!row){
+				BusStopProxy.getOne(id, function(origRow){
+					origRow.orig_id = origRow.id;
+					origRow.user_id = APP.userId;
+					origRow.id = undefined; //auto increment
+					UserBusStopProxy.save(origRow);
+				});
+			}
+		});
+	};
+	
+	_r.loadList = function(onDone){
+		UserBusStopProxy.getList(function(list){
+			onDone(list ? list : {});
+		});
+	};
+
+	return _r;
+})();
+
 var BusStopProxy = BusStopProxy || (function () {
 
-	var _r = new Object();//Extend function
+	var _r = new Object();
 	
-	//LOCAL EVENTS
-	_r.USER_LIST_LOADED = 'USER_LIST_LOADED';
-	
-	/**
-	* 
-	* @method getList
-	* @param {int} userId 
-	* @param {String : null} searchQuery 
-	* @param {Boolean : false} fromServer 
-	* @return {Object}
-	*/
-	_r.getList = function(userId, searchQuery, fromServer){
-		return _r.cache[userId];
-	};
-	
-	_r.loadList = function(userId, searchQuery, fromServer){
-		console.log('BusStopProxy.loadList');
-		if(undefined === _r.cache[userId]){
-			LocalStorage.connection().load('BusStop', {'user_id' : userId}, function(list){
-				console.log('loadList => LocalStorage.load('+userId+')');
-				console.log(list);
-				_r.cache[userId] = list ? list : [];
-				$(document).trigger(BusStopProxy.USER_LIST_LOADED, [userId]);
-			});
-		}else{
-			console.log('BusStopProxy loadList('+userId+')');
-			$(document).trigger(BusStopProxy.USER_LIST_LOADED, [userId]);
-		}
+	_r.getList = function(kvPairs, options, onDone){
+		ServerStorage.load('positions', kvPairs, options, function(list){
+			onDone(list);
+		});
 	};
 
-	/**
-	* 
-	* @method saveList
-	* @param {BusStopVO[0..*]} list 
-	* @param {Boolean : false} toServer 
-	*/
-	_r.saveList = function(list, toServer){
-		
-		//Stub code - to be removed
-		alert("the function 'saveList' has been called  " + " with the following parameters:" + " list:" + list)
-		
-		//Stub code - to be removed
-		alert("the function 'saveList' has been called  " + " with the following parameters:" + " list:" + list + " toServer:" + toServer)
-		
+	_r.getOne = function(id, onDoneGetRow){
+		ServerStorage.load('positions', {'id' : id}, {}, function(result){
+			if(result && result.success && result.data.length > 0){
+				onDoneGetRow(result.data[0]);
+			}else{
+				onDoneGetRow();
+			}
+		});
 	};
-	/**
-	* 
-	* @method getOne
-	* @param {int} id 
-	* @return {Object}
-	*/
-	_r.getOne = function(id){
-		
-		//Stub code - to be removed
-		alert("the function 'getOne' has been called  " + " with the following parameters:" + " id:" + id)
-		
-		return new Object();
+
+	_r.save = function(kvPairs, onDone){
+		ServerStorage.save('positions', kvPairs, onDone);
 	};
-	/**
-	* 
-	* @method save
-	* @param {Object} busStop 
-	* @param {Boolean : false} toServer 
-	*/
-	_r.save = function(busStop, toServer){
-		
-		//Stub code - to be removed
-		alert("the function 'save' has been called  " + " with the following parameters:" + " busStop:" + busStop)
-		
-		//Stub code - to be removed
-		alert("the function 'save' has been called  " + " with the following parameters:" + " busStop:" + busStop + " toServer:" + toServer)
-		
-	};
-		
-	_r.cache = [];
-	
+
 	return _r;
 })();
 
@@ -294,7 +309,6 @@ var RegionProxy = RegionProxy || (function () {
 		
 		return new Object();
 	};
-		
 	return _r;
 })();
 
@@ -461,22 +475,12 @@ var WebLocalStorage = function() {
 //PUBLIC
 WebLocalStorage.prototype.init = function(createTables){
 	this._busy = false;
+	
+	console.log(localStorage);
 	if(createTables){
 		for(var table in createTables){
 			if(undefined == localStorage[table]){
-				localStorage.setItem(table, 
-				{
-					__autoincrement:0, 
-					insert: function(row){
-						if(undefined == row.id){
-							row.id = this.__autoincrement++; 
-						}else if(this.__autoincrement < row.id){
-							this.__autoincrement = row.id*1;
-						}
-						this[row.id] = row;  
-						return row.id;
-					}
-				});
+				localStorage.setItem(table, '{"__autoincrement":0}');
 			}
 		}
 	}
@@ -484,46 +488,66 @@ WebLocalStorage.prototype.init = function(createTables){
 	
 };
 
-WebLocalStorage.prototype.insert = function(table, kvPairs, onDoneGetId){
-	this._transaction(table, function(data){
-		onDoneGetId(localStorage[table].insert(kvPairs));
+WebLocalStorage.prototype.save = function(table, kvPairs, onDoneGetId){
+	console.log('WebLocalStorage.prototype.save', table, kvPairs);
+	this._transaction(table, function(data, onTableDataChanged){
+		if(undefined == kvPairs.id){
+			kvPairs.id = data.__autoincrement++; 
+		}else if(data.__autoincrement < kvPairs.id){
+			data.__autoincrement = kvPairs.id*1;
+		}
+		data[kvPairs.id] = kvPairs;  
+		onTableDataChanged(data);
+		if(onDoneGetId){
+			onDoneGetId(kvPairs.id);
+		}
 	});
 };
 
 WebLocalStorage.prototype.load = function(table, kvPairs, onDoneGetResult){
 	this._transaction(table, function(data){
+		if(undefined == kvPairs) {
+			kvPairs = {};
+		}
+		
 		if(undefined == kvPairs.id){
 			var result = [];
 			for(var id in data){
-				var push = true;
-				for(var k in kvPairs){
-					if(undefined == data[id][k] || data[id][k] != kvPairs[k]){
-						push = false;
-						break;
+				if(id != '__autoincrement'){
+					var push = true;
+					for(var k in kvPairs){
+						if(undefined == data[id][k] || data[id][k] != kvPairs[k]){
+							push = false;
+							break;
+						}
 					}
-				}
-				if(push){
-					result.push(data[id]);
+					if(push){
+						result.push(data[id]);
+					}
 				}
 			}
 			onDoneGetResult(result);
 		}else{
-			onDoneGetResult([data[kvPairs.id]]);
+			if(undefined == data[kvPairs.id]){
+				onDoneGetResult([]);
+			}else{
+				onDoneGetResult([data[kvPairs.id]]);
+			}
 		}
 	});
 };
 
 WebLocalStorage.prototype.remove = function(table, kvPairs, onDone){
-	this._transaction(table, function(data){
+	this._transaction(table, function(data, onTableDataChanged){
 		if(undefined == kvPairs.id){
 			this.load(table, kvPairs, function(row){
 				data[row.id] = undefined;
-				localStorage[table] = data;
+				onTableDataChanged(data);
 				onDone();
 			});
 		}else{
 			data[kvPairs.id] = undefined;
-			localStorage[table] = data;
+			onTableDataChanged(data);
 			onDone();
 		}
 	});
@@ -537,41 +561,25 @@ WebLocalStorage.prototype._queryError = function(err){
 };
 
 WebLocalStorage.prototype._transaction = function(table, onDoneGetTableData){
-	if(!this._busy){
-		this._busy = true;
-		if(undefined == localStorage[table]){
-			this._queryError({code : LocalStorage.ERROR_UNKNOWN_TABLE, message : 'LocalStorage.ERROR_UNKNOWN_TABLE'});
-		}else{
-			onDoneGetTableData(localStorage[table]);
-		}
-		this._busy = false;
+	if(undefined == localStorage[table]){
+		this._queryError({code : LocalStorage.ERROR_UNKNOWN_TABLE, message : 'LocalStorage.ERROR_UNKNOWN_TABLE'});
+	}else{
+		onDoneGetTableData(JSON.parse(localStorage[table]), function(resultObject){
+			var res = JSON.stringify(resultObject);
+			localStorage[table] = res;
+		});
+		
 	}
 };
 
 window.WebLocalStorage = WebLocalStorage;
 }());
 
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class BusStopProxy
-* @static
-*/
 var LocalStorage = LocalStorage || (function () {
 
 	var _r = new Object();
 	
 	//DISPATCH EVENTS
-	_r.LOADED = 'LOCAL_STORAGE_LOADED';
 	_r.QUERY_ERROR = 'LOCAL_STORAGE_QUERY_ERROR';
 	_r.INITIALIZED = 'LOCAL_STORAGE_INITIALIZED';
 	
@@ -605,6 +613,82 @@ var LocalStorage = LocalStorage || (function () {
 	
 	return _r;
 })();
+var ServerStorage = ServerStorage || (function () {
+
+	var _r = new Object();
+	
+	//DISPATCH EVENTS
+	_r.QUERY_ERROR = 'SERVER_STORAGE_QUERY_ERROR';
+
+	//PUBLIC
+
+	_r.init = function(url, onDone){
+		ServerStorage.url = url;
+		onDone();
+	};
+
+	_r.insert = function(table, kvPairs, callback){
+		this._query({type: 'insert', table: table, kvPairs: kvPairs}, callback);
+	};
+
+	_r.load = function(table, kvPairs, options, callback){
+		var params = {type: 'load', table: table, kvPairs: kvPairs};
+		if(undefined != options.limit_count){
+			params.limit_count = options.limit_count * 1;
+		}
+
+		if(undefined != options.limit_start){
+			params.limit_start = options.limit_start * 1;
+		}
+		
+		_r._query(params, callback);
+	};
+
+	_r.remove = function(table, kvPairs, callback){
+		_r._query({type: 'remove', table: table, kvPairs: kvPairs}, callback);
+	};
+	//PRIVATE
+	_r._query = function(data, success){
+		$.ajax({
+			type: "GET",
+			url: ServerStorage.url,
+			data: data,
+			success: success,
+			error: function(err){
+				console.log(err);
+				$(document).trigger(ServerStorage.QUERY_ERROR, [err]);
+				success(); //ERROR
+			},
+			dataType: "json",
+		});
+	};
+	return _r;
+})();
+var UserBusStopProxy = UserBusStopProxy || (function () {
+
+	var _r = new Object();//Extend function
+	
+	_r.getList = function(onDone){
+		LocalStorage.connection().load('BusStop', {}, onDone);
+	};
+
+	_r.getOne = function(id, onDone){
+		LocalStorage.connection().load('BusStop', {id:id}, function(list){
+			if(list.length > 0){
+				onDone();
+			}else{
+				onDone(list[0]);
+			}
+		});
+	};
+
+	_r.save = function(kvPairs, onDone){
+		LocalStorage.connection().save('BusStop', kvPairs, onDone);
+	};
+		
+	return _r;
+})();
+
 /**
 *@namespace 
 */
@@ -631,9 +715,6 @@ var UserProxy = UserProxy || (function () {
 	*/
 	_r.save = function(user){
 		
-		//Stub code - to be removed
-		alert("the function 'save' has been called  " + " with the following parameters:" + " user:" + user)
-		
 	};
 	/**
 	* 
@@ -642,9 +723,6 @@ var UserProxy = UserProxy || (function () {
 	*/
 	_r.getList = function(searchQuery){
 		
-		//Stub code - to be removed
-		alert("the function 'getList' has been called  " + " with the following parameters:" + " searchQuery:" + searchQuery)
-		
 	};
 	/**
 	* 
@@ -652,9 +730,6 @@ var UserProxy = UserProxy || (function () {
 	* @param {int} id 
 	*/
 	_r.getOne = function(id){
-		
-		//Stub code - to be removed
-		alert("the function 'getOne' has been called  " + " with the following parameters:" + " id:" + id)
 		
 	};
 		
@@ -1167,21 +1242,6 @@ var BusStopListView = BusStopListView || (function () {
 	return _r;
 })();
 
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class BusStopView
-* @static
-*/
 var BusStopView = BusStopView || (function () {
 
 	var _r = new Object();
@@ -1230,13 +1290,11 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r._toHtml = function(busStopVO){
-		var html = '_r._toHtml';
-		
-		return html;
+		return ViewTools.busStopRowDetails();;
 	};
 	_r.emptyList = function(){
-		$(BusStopView.div).hide();
-		$(UserListEmptyView.div).show();
+		BusStopView.hide();
+		UserListEmptyView.show();
 	};
 	
 	/**
@@ -1244,12 +1302,14 @@ var BusStopView = BusStopView || (function () {
 	* @method getNearest
 	*/
 	_r.getNearest = function(){
-		console.log('okoko');
-		if(_r.list.length == 0){
-			_r.emptyList();
-		}else{
-			$(_r.div).html(_r._toHtml(_r.list[0]));
-		}
+		UserListController.loadList(function(list){
+			if(list.length == 0){
+				_r.emptyList();
+			}else{
+				$(_r.div).html(_r._toHtml(list[0]));
+			}
+		});
+		
 	};
 	/**
 	* 
@@ -1280,13 +1340,14 @@ var BusStopView = BusStopView || (function () {
 		
 	};
 	
-	_r._onUserListLoaded = function(){
-		_r.getNearest();
+	_r.hide = function(){
+		$(this.div).hide();
 	};
 	
-	_r.list = [];
-	//LISTA USERA JEST ZAŁADOWANA
-	$(document).on(BusStopProxy.USER_LIST_LOADED, _r._onUserListLoaded);
+	_r.show = function(){
+		this.getNearest();
+	};
+	
 	return _r;
 })();
 
@@ -1323,27 +1384,37 @@ var MapView = MapView || (function () {
 	return _r;
 })();
 
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class UserListEmptyView
-* @static
-*/
 var UserListEmptyView = UserListEmptyView || (function () {
 
 	var _r = new Object();
 	_r.div = '#UserListEmptyView';
+	_r.div_form = '#UserListEmptyView_form';
+	_r.div_submit = '#UserListEmptyView_submit';
+	_r.div_items = '#UserListEmptyView_items';
+	_r.div_loading = '#UserListEmptyView_loading';
 	
-		
+	_r.show = function(){
+		$(_r.div_items).html('');
+		$(_r.div_items).hide();
+		$(_r.div_loading).show();
+		BusStopController.searchNearest(function(rows){
+			$(_r.div_items).html(ViewTools.busStopRowList(rows, 'UserListEmptyView'));
+			$(_r.div_items).show();
+			$(_r.div_loading).hide();
+		});
+		$(_r.div).show();
+	};
+	
+
+	$(document).ready(function(){
+		$(_r.div_submit).click(function(e){
+			$(_r.div_form).serializeArray().map(function(input){
+				UserListController.addToList(input.value);
+			}); 
+			return false;
+		});
+	});
+	
 	return _r;
 })();
 
@@ -1391,21 +1462,6 @@ var UserListView = UserListView || (function () {
 	return _r;
 })();
 
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class UserView
-* @static
-*/
 var UserView = UserView || (function () {
 
 	var _r = new Object();//Extend function
@@ -1437,6 +1493,31 @@ var UserView = UserView || (function () {
 		
 	};
 		
+	return _r;
+})();
+
+var ViewTools = ViewTools || (function () {
+
+	var _r = new Object();
+	
+	_r.busStopRowDetails = function(row, prefix){
+		return 'okokok';
+	};
+	
+	_r.busStopRowList = function(rows, prefix){
+		if(prefix){
+			prefix += '_';
+		}else{
+			prefix = '';
+		}
+		for(var key in rows){
+			var row = rows[key];
+			return '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
+					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.name+'</label></div>\
+					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.user+'</label></div>\
+					<div class="clear"></div>';			
+		}
+	};
 	return _r;
 })();
 

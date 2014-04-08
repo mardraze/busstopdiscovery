@@ -24,9 +24,6 @@ var UserProxy = UserProxy || (function () {
 	*/
 	_r.save = function(user){
 		
-		//Stub code - to be removed
-		alert("the function 'save' has been called  " + " with the following parameters:" + " user:" + user)
-		
 	};
 	/**
 	* 
@@ -35,9 +32,6 @@ var UserProxy = UserProxy || (function () {
 	*/
 	_r.getList = function(searchQuery){
 		
-		//Stub code - to be removed
-		alert("the function 'getList' has been called  " + " with the following parameters:" + " searchQuery:" + searchQuery)
-		
 	};
 	/**
 	* 
@@ -45,9 +39,6 @@ var UserProxy = UserProxy || (function () {
 	* @param {int} id 
 	*/
 	_r.getOne = function(id){
-		
-		//Stub code - to be removed
-		alert("the function 'getOne' has been called  " + " with the following parameters:" + " id:" + id)
 		
 	};
 		

@@ -1,18 +1,3 @@
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class BusStopView
-* @static
-*/
 var BusStopView = BusStopView || (function () {
 
 	var _r = new Object();
@@ -61,13 +46,11 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r._toHtml = function(busStopVO){
-		var html = '_r._toHtml';
-		
-		return html;
+		return ViewTools.busStopRowDetails();;
 	};
 	_r.emptyList = function(){
-		$(BusStopView.div).hide();
-		$(UserListEmptyView.div).show();
+		BusStopView.hide();
+		UserListEmptyView.show();
 	};
 	
 	/**
@@ -75,12 +58,14 @@ var BusStopView = BusStopView || (function () {
 	* @method getNearest
 	*/
 	_r.getNearest = function(){
-		console.log('okoko');
-		if(_r.list.length == 0){
-			_r.emptyList();
-		}else{
-			$(_r.div).html(_r._toHtml(_r.list[0]));
-		}
+		UserListController.loadList(function(list){
+			if(list.length == 0){
+				_r.emptyList();
+			}else{
+				$(_r.div).html(_r._toHtml(list[0]));
+			}
+		});
+		
 	};
 	/**
 	* 
@@ -111,13 +96,14 @@ var BusStopView = BusStopView || (function () {
 		
 	};
 	
-	_r._onUserListLoaded = function(){
-		_r.getNearest();
+	_r.hide = function(){
+		$(this.div).hide();
 	};
 	
-	_r.list = [];
-	//LISTA USERA JEST ZAŁADOWANA
-	$(document).on(BusStopProxy.USER_LIST_LOADED, _r._onUserListLoaded);
+	_r.show = function(){
+		this.getNearest();
+	};
+	
 	return _r;
 })();
 

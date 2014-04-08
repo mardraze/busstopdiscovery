@@ -54,7 +54,6 @@ var RegionProxy = RegionProxy || (function () {
 		
 		return new Object();
 	};
-		
 	return _r;
 })();
 

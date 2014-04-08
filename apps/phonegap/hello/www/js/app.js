@@ -16,18 +16,19 @@ var APP = APP || (function () {
 			}
 		}
 		$(document).on(LocalStorage.INITIALIZED, function(){
-			BusStopProxy.loadList(APP.userId);
-			UpdatePositionController.run();
+			ServerStorage.init('http://localhost/projekty/inzynierka/busstopdiscovery/apps/serverStorage', function(){
+				UpdatePositionController.run();
+				BusStopView.show();
+			});
 		});
-		_r._setupLocalStorage();
+		_r._setupStorage();
 	};
 	
-	_r._setupLocalStorage = function(){
+	_r._setupStorage = function(){
 		var tables = {
 			'BusStop' : ['user_id', 'lon', 'lat', 'name'],
 		};
-		if(undefined != localStorage){
-			console.log('APP::_setupLocalStorage => WebLocalStorage');
+		if(undefined != localStorage || true){
 			//HTML5 LocalStorage
 			LocalStorage.initWeb(tables);
 		}else if(undefined != window.openDatabase){
@@ -44,8 +45,12 @@ var APP = APP || (function () {
 		}else{
 			console.log('Ajax Storage');
 			//Ajax storage
-			LocalStorage.initAjax('http://localhost/projekty/storage');
+			LocalStorage.initAjax('http://localhost/projekty/localStorage');
 		}
+		
+		
+		
+		
 	};
 
 	return _r;

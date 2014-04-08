@@ -1,24 +1,8 @@
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class BusStopProxy
-* @static
-*/
 var LocalStorage = LocalStorage || (function () {
 
 	var _r = new Object();
 	
 	//DISPATCH EVENTS
-	_r.LOADED = 'LOCAL_STORAGE_LOADED';
 	_r.QUERY_ERROR = 'LOCAL_STORAGE_QUERY_ERROR';
 	_r.INITIALIZED = 'LOCAL_STORAGE_INITIALIZED';
 	

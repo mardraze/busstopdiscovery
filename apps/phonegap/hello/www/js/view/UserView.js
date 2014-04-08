@@ -1,18 +1,3 @@
-/**
-*@namespace 
-*/
-
-
-/**
-* 
-* 
-* @author Marten Olgaard
-* @created 4/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class UserView
-* @static
-*/
 var UserView = UserView || (function () {
 
 	var _r = new Object();//Extend function
