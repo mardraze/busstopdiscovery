@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+		<title>Bus Stop Discovery - tests</title>
+		<link rel="stylesheet" type="text/css" href="css/test.css"/>
+    </head>
+    <body>
+		<div id="test_result"></div>
+		<input type="button" id="tests_start" onclick="$(this).hide(); Tests.start();" value="BEGIN TESTS"/>
+		<input type="button" id="tests_start" onclick="document.cookie = ''; window.location.reload();" value="CLEAR COOKIE"/>
+		
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript" src="stacktrace.js"></script>
+		<script type="text/javascript" src="js/all.js"></script>
+		<script type="text/javascript" src="tests.js"></script>
+		<script type="text/javascript">
+			if(document.cookie){
+				$('#tests_start').hide();
+				Tests.start();
+			}
+			
+		</script>
+
+    </body>
+</html>

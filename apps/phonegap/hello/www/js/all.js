@@ -16,7 +16,7 @@ var APP = APP || (function () {
 			}
 		}
 		$(document).on(LocalStorage.INITIALIZED, function(){
-			ServerStorage.init('http://localhost/projekty/inzynierka/busstopdiscovery/apps/serverStorage', function(){
+			ServerStorage.init(APP.server_storage_url, function(){
 				UpdatePositionController.run();
 				BusStopView.show();
 			});
@@ -453,30 +453,15 @@ SQLiteLocalStorage.prototype.remove = function(table, kvPairs, callback){
 window.SQLiteLocalStorage = SQLiteLocalStorage;
 }());
 
-/**
-*@namespace 
-*/
+
 (function () {
 
-/**
-* 
-* 
-* @author Marten ?gaard
-* @created 3/4/2014
-* @copyright Adnuvo
-* @todo 
-* @class WebLocalStorage
-* @constructor
-*/
 var WebLocalStorage = function() {
 }
 
 
 //PUBLIC
 WebLocalStorage.prototype.init = function(createTables){
-	this._busy = false;
-	
-	console.log(localStorage);
 	if(createTables){
 		for(var table in createTables){
 			if(undefined == localStorage[table]){
@@ -485,11 +470,9 @@ WebLocalStorage.prototype.init = function(createTables){
 		}
 	}
 	$(document).trigger(LocalStorage.INITIALIZED);
-	
 };
 
-WebLocalStorage.prototype.save = function(table, kvPairs, onDoneGetId){
-	console.log('WebLocalStorage.prototype.save', table, kvPairs);
+WebLocalStorage.prototype.save = function(table, kvPairs, onDoneGetId, onError){
 	this._transaction(table, function(data, onTableDataChanged){
 		if(undefined == kvPairs.id){
 			kvPairs.id = data.__autoincrement++; 
@@ -501,10 +484,10 @@ WebLocalStorage.prototype.save = function(table, kvPairs, onDoneGetId){
 		if(onDoneGetId){
 			onDoneGetId(kvPairs.id);
 		}
-	});
+	}, onError);
 };
 
-WebLocalStorage.prototype.load = function(table, kvPairs, onDoneGetResult){
+WebLocalStorage.prototype.load = function(table, kvPairs, onDoneGetResult, onError){
 	this._transaction(table, function(data){
 		if(undefined == kvPairs) {
 			kvPairs = {};
@@ -534,10 +517,10 @@ WebLocalStorage.prototype.load = function(table, kvPairs, onDoneGetResult){
 				onDoneGetResult([data[kvPairs.id]]);
 			}
 		}
-	});
+	}, onError);
 };
 
-WebLocalStorage.prototype.remove = function(table, kvPairs, onDone){
+WebLocalStorage.prototype.remove = function(table, kvPairs, onDone, onError){
 	this._transaction(table, function(data, onTableDataChanged){
 		if(undefined == kvPairs.id){
 			this.load(table, kvPairs, function(row){
@@ -550,25 +533,29 @@ WebLocalStorage.prototype.remove = function(table, kvPairs, onDone){
 			onTableDataChanged(data);
 			onDone();
 		}
-	});
+	}, onError);
 };
 
 //PRIVATE
 WebLocalStorage.prototype._queryError = function(err){
 	console.log("Error processing SQL: ");
 	console.log(err);
+	console.log(printStackTrace());
 	$(document).trigger(LocalStorage.QUERY_ERROR, [err]);
 };
 
-WebLocalStorage.prototype._transaction = function(table, onDoneGetTableData){
+WebLocalStorage.prototype._transaction = function(table, onDoneGetTableData, onError){
 	if(undefined == localStorage[table]){
-		this._queryError({code : LocalStorage.ERROR_UNKNOWN_TABLE, message : 'LocalStorage.ERROR_UNKNOWN_TABLE'});
+		var err = {code : LocalStorage.ERROR_UNKNOWN_TABLE, message : 'LocalStorage.ERROR_UNKNOWN_TABLE'};
+		this._queryError(err);
+		if(onError){
+			onError(err);
+		}
 	}else{
 		onDoneGetTableData(JSON.parse(localStorage[table]), function(resultObject){
 			var res = JSON.stringify(resultObject);
 			localStorage[table] = res;
 		});
-		
 	}
 };
 

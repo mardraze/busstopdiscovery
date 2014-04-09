@@ -1,0 +1,10 @@
+.no_result {
+	background: #666666;
+}
+
+.success {
+	background: green;
+} 
+.failure{
+	background: red;
+}

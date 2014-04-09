@@ -16,7 +16,7 @@ var APP = APP || (function () {
 			}
 		}
 		$(document).on(LocalStorage.INITIALIZED, function(){
-			ServerStorage.init('http://localhost/projekty/inzynierka/busstopdiscovery/apps/serverStorage', function(){
+			ServerStorage.init(APP.server_storage_url, function(){
 				UpdatePositionController.run();
 				BusStopView.show();
 			});
