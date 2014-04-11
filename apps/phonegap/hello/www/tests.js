@@ -199,7 +199,6 @@ var Tests = Tests || (function () {
 		
 	};
 	
-	
 	_r.setup_app = function(ready){
 		$(document).on(LocalStorage.INITIALIZED, function(){
 			ready();

@@ -8,6 +8,9 @@ var ServerStorage = ServerStorage || (function () {
 	//PUBLIC
 
 	_r.init = function(url, onDone){
+		if(!url){
+			console.log('ServerStorage: url is not defined');
+		}
 		ServerStorage.url = url;
 		onDone();
 	};
@@ -32,6 +35,7 @@ var ServerStorage = ServerStorage || (function () {
 	_r.remove = function(table, kvPairs, callback){
 		_r._query({type: 'remove', table: table, kvPairs: kvPairs}, callback);
 	};
+	
 	//PRIVATE
 	_r._query = function(data, success){
 		$.ajax({

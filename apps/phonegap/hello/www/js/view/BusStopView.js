@@ -46,7 +46,7 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r._toHtml = function(busStopVO){
-		return ViewTools.busStopRowDetails();;
+		return ViewTools.busStopRowDetails(busStopVO);
 	};
 	_r.emptyList = function(){
 		BusStopView.hide();
