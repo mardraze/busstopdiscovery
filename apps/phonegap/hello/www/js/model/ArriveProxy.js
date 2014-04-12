@@ -1,15 +1,15 @@
-var BusStopProxy = BusStopProxy || (function () {
+var ArriveProxy = ArriveProxy || (function () {
 
 	var _r = new Object();
 	
 	_r.getList = function(kvPairs, options, onDone){
-		ServerStorage.load('busstop', kvPairs, options, function(list){
+		ServerStorage.load('arrive', kvPairs, options, function(list){
 			onDone(list);
 		});
 	};
 
 	_r.getOne = function(id, onDoneGetRow){
-		ServerStorage.load('busstop', {'id' : id}, {}, function(result){
+		ServerStorage.load('arrive', {'id' : id}, {}, function(result){
 			if(result && result.success && result.data.length > 0){
 				onDoneGetRow(result.data[0]);
 			}else{
@@ -19,7 +19,7 @@ var BusStopProxy = BusStopProxy || (function () {
 	};
 
 	_r.save = function(kvPairs, onDone){
-		ServerStorage.save('busstop', kvPairs, onDone);
+		ServerStorage.save('arrive', kvPairs, onDone);
 	};
 
 	return _r;

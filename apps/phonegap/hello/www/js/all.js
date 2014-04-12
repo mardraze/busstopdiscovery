@@ -62,8 +62,13 @@ var BusStopController = BusStopController || (function () {
 	_r.searchNearest = function(onDone){
 		
 		BusStopProxy.getList({region: RegionController.currentRegion}, {limit_start: 0, limit_count: 10}, function(data){
-			
-			onDone(data && data.success && data.count ? data.data : {});
+			if(data && data.success && data.count){
+				var list = data.data;
+				console.log(list);
+				onDone(list);
+			}else{
+				onDone({});
+			}
 		});
 	};
 	
@@ -204,7 +209,8 @@ var UserListController = UserListController || (function () {
 	
 	_r.loadList = function(onDone){
 		UserBusStopProxy.getList(function(list){
-			onDone(list ? list : {});
+			onDone([]);
+			//onDone(list ? list : []);
 		});
 	};
 
@@ -1490,8 +1496,6 @@ var ViewTools = ViewTools || (function () {
 		mondaysMidnight.setMilliseconds(0);
 		mondaysMidnight.setTime(mondaysMidnight.getTime() + (weekSeconds * 1000));
 		var timeOffset = ((mondaysMidnight.getTime() - date.getTime()) * 1);
-		console.log(timeOffset);
-		console.log(APP.friendlyTimeSeconds);
 		if(timeOffset < APP.friendlyTimeSeconds){
 			var minutes = parseInt((timeOffset/1000)/60);
 			if(minutes > 0){

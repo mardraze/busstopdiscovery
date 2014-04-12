@@ -12,8 +12,6 @@ var ViewTools = ViewTools || (function () {
 		mondaysMidnight.setMilliseconds(0);
 		mondaysMidnight.setTime(mondaysMidnight.getTime() + (weekSeconds * 1000));
 		var timeOffset = ((mondaysMidnight.getTime() - date.getTime()) * 1);
-		console.log(timeOffset);
-		console.log(APP.friendlyTimeSeconds);
 		if(timeOffset < APP.friendlyTimeSeconds){
 			var minutes = parseInt((timeOffset/1000)/60);
 			if(minutes > 0){

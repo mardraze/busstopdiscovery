@@ -18,7 +18,8 @@ var UserListController = UserListController || (function () {
 	
 	_r.loadList = function(onDone){
 		UserBusStopProxy.getList(function(list){
-			onDone(list ? list : {});
+			onDone([]);
+			//onDone(list ? list : []);
 		});
 	};
 
