@@ -40,10 +40,6 @@ var BusStopController = BusStopController || (function () {
 		});
 	};
 	
-	$(document).ready(function(){
-		
-	});
-	
 	return _r;
 })();
 
