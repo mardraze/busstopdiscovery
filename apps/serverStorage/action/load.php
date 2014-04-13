@@ -10,11 +10,16 @@ $data = array();
 $count = 0;
 if(in_array($table, $config['TABLES'])){
 	
-	$query = 'SELECT * FROM `'.$table.'`';
+	$query = 'SELECT * FROM '.$config['escape'].$table.$config['escape'];
 	if($kvPairs){
 		$set = array();
+		if($kvPairs['in_circle']){
+			$set []= 'st_point_inside_circle(latlon, '.($kvPairs['in_circle']['lat'] * 1).', '.($kvPairs['in_circle']['lon'] * 1).', '.($kvPairs['in_circle']['distance'] * 1).')';
+			unset($kvPairs['in_circle']);
+		}
+		
 		foreach($kvPairs as $k => $v){
-			$set []= '`'.q($k).'`="'.q($v).'"';
+			$set []= $config['escape'].q($k).$config['escape']."='".q($v)."'";
 		}
 		$query .= ' WHERE '.implode(' AND ', $set);
 	}
@@ -22,7 +27,7 @@ if(in_array($table, $config['TABLES'])){
 		$query .= ' LIMIT '.($limit_start ? ($limit_start.',') : '').$limit_count;
 	}
 	$result = _query($query);
-	while($row = mysql_fetch_assoc($result)){
+	while($row = _fetch_assoc($result)){
 		$data[] = $row;
 		$count++;
 	}

@@ -3,8 +3,15 @@ var BusStopController = BusStopController || (function () {
 	var _r = new Object();
 	
 	_r.searchNearest = function(onDone){
-		
-		BusStopProxy.getList({region: RegionController.currentRegion}, {limit_start: 0, limit_count: 10}, function(data){
+		var where = {
+			regionId: RegionController.currentRegion,
+			in_circle : {
+				lat : 54.369546,
+				lon : 18.607197,
+				distance : 0.01,
+			}
+		}
+		BusStopProxy.getList(where, {limit_start: 0, limit_count: 10}, function(data){
 			if(data && data.success && data.count){
 				var list = data.data;
 				console.log(list);

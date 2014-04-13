@@ -22,7 +22,7 @@ var UpdatePositionController = UpdatePositionController || (function () {
 	* @property {int} frequency
 	*/
 	_r.frequency = 10000;
-	
+	_r.watching = false;
 	_r._isNearer = function(current, next, lon, lat){
 		var currentDX = Math.abs(current.lon - lon);
 		var currentDY = Math.abs(current.lat - lat);
@@ -52,36 +52,26 @@ var UpdatePositionController = UpdatePositionController || (function () {
 		console.log('_onPositionUpdateError');
 	};
 	
-	_r.update = function(){
-		console.log('_r.update');
-		//navigator.geolocation.getCurrentPosition(_r._onPositionUpdateSuccess, _r._onPositionUpdateError);
-	};
-	
 	_r.getSortedList = function(){
 		return _r.list;
 	};
 	
 	_r._onUserListLoaded = function(e, userId){
-		console.log('_r._onUserListLoaded');
-		console.log(userId == APP.userId);
-		console.log(APP.userId);
-		console.log(userId);
 		if(userId == APP.userId){
 			_r.list = BusStopProxy.getList(APP.userId);
-			_r.update();
+			if(!_r.watching){
+				_r.watching = true;
+				var geo_options = {
+				  enableHighAccuracy: true, 
+				  maximumAge        : 30000, 
+				  timeout           : 27000
+				};
+				navigator.geolocation.watchPosition(_r._onPositionUpdateSuccess, _r._onPositionUpdateError, geo_options);
+			}
 		}
 	};
-	_r.running = false;
 	_r.run = function(){
-		if(!_r.running){
-			$(document).on(BusStopProxy.USER_LIST_LOADED, _r._onUserListLoaded);
-			_r.running = true;
-			var repeat = function(){
-				_r.update();
-				setTimeout(repeat, _r.frequency);
-			};
-			setTimeout(repeat, _r.frequency);
-		}
+		$(document).on(BusStopProxy.USER_LIST_LOADED, _r._onUserListLoaded);
 	};
 	
 	
