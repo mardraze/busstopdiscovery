@@ -21,14 +21,11 @@ var ServerStorage = ServerStorage || (function () {
 
 	_r.load = function(table, kvPairs, options, callback){
 		var params = {type: 'load', table: table, kvPairs: kvPairs};
-		if(undefined != options.limit_count){
-			params.limit_count = options.limit_count * 1;
-		}
-
-		if(undefined != options.limit_start){
-			params.limit_start = options.limit_start * 1;
-		}
 		
+		for(var key in options){
+			params[key] = options[key];
+		}
+		console.log(params);
 		_r._query(params, callback);
 	};
 

@@ -11,7 +11,25 @@ var BusStopController = BusStopController || (function () {
 				distance : 0.01,
 			}
 		}
-		BusStopProxy.getList(where, {limit_start: 0, limit_count: 10}, function(data){
+
+		var additionalParams = {
+			limit_start: 0, 
+			limit_count: 10, 
+			fields : [
+				{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
+				{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
+				{
+					'field' : ['latlon', where.in_circle.lat, where.in_circle.lon], 
+					'func' : 'ST_Distance', 
+					'alias' : 'distance',
+				},
+				{ 'field' : '*'},
+			],
+			order_by : 'distance',
+			
+		};
+		
+		BusStopProxy.getList(where, additionalParams, function(data){
 			if(data && data.success && data.count){
 				var list = data.data;
 				console.log(list);

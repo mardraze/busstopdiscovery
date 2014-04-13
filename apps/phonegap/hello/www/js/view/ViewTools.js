@@ -49,13 +49,17 @@ var ViewTools = ViewTools || (function () {
 		}else{
 			prefix = '';
 		}
+		html = '';
+		console.log(rows);
+		
 		for(var key in rows){
 			var row = rows[key];
-			return '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
+			html += '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
 					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.name+'</label></div>\
 					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.user+'</label></div>\
 					<div class="clear"></div>';			
 		}
+		return html;
 	};
 	return _r;
 })();

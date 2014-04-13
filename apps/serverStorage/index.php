@@ -11,6 +11,9 @@ if($config['DB_TYPE'] == 'mysql'){
 	function _fetch_assoc($row){
 		return mysql_fetch_assoc($row);
 	}
+	function _esc($str){
+		return '`'.$str.'`';
+	}
 
 }else{
 	pg_connect("host=".$config['POSTGRES_DB']['host']." port=5432 dbname=".$config['POSTGRES_DB']['db_name']." user=".$config['POSTGRES_DB']['user']." password=".$config['POSTGRES_DB']['pass']."") or die('conn');
@@ -21,13 +24,14 @@ if($config['DB_TYPE'] == 'mysql'){
 	function _fetch_assoc($row){
 		return pg_fetch_assoc($row);
 	}
+	function _esc($str){
+		return '"'.$str.'"';
+	}
 
 }
 
-
-
 function q($str){
-	return @preg_replace('/\W/', '', @substr($str, 0, 100));
+	return @preg_replace('/[^a-zA-Z0-9*.]/', '', @substr($str, 0, 100));
 }
 
 

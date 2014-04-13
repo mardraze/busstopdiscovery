@@ -15,6 +15,7 @@ $config = array(
 	),
 	'TABLES' => array('busstop'),
 	'DB_TYPE' => 'postgresql',//'mysql', 'postgresql',
+	'POSTGRES_AVAILABLE_FUNC' => array('ST_X', 'ST_Y', 'ST_Distance',),
 );
 $config['escape'] = ($config['DB_TYPE'] == 'mysql') ? '`' : '"';
 

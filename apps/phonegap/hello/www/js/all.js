@@ -68,7 +68,25 @@ var BusStopController = BusStopController || (function () {
 				distance : 0.01,
 			}
 		}
-		BusStopProxy.getList(where, {limit_start: 0, limit_count: 10}, function(data){
+
+		var additionalParams = {
+			limit_start: 0, 
+			limit_count: 10, 
+			fields : [
+				{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
+				{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
+				{
+					'field' : ['latlon', where.in_circle.lat, where.in_circle.lon], 
+					'func' : 'ST_Distance', 
+					'alias' : 'distance',
+				},
+				{ 'field' : '*'},
+			],
+			order_by : 'distance',
+			
+		};
+		
+		BusStopProxy.getList(where, additionalParams, function(data){
 			if(data && data.success && data.count){
 				var list = data.data;
 				console.log(list);
@@ -638,14 +656,11 @@ var ServerStorage = ServerStorage || (function () {
 
 	_r.load = function(table, kvPairs, options, callback){
 		var params = {type: 'load', table: table, kvPairs: kvPairs};
-		if(undefined != options.limit_count){
-			params.limit_count = options.limit_count * 1;
-		}
-
-		if(undefined != options.limit_start){
-			params.limit_start = options.limit_start * 1;
-		}
 		
+		for(var key in options){
+			params[key] = options[key];
+		}
+		console.log(params);
 		_r._query(params, callback);
 	};
 
@@ -1557,13 +1572,17 @@ var ViewTools = ViewTools || (function () {
 		}else{
 			prefix = '';
 		}
+		html = '';
+		console.log(rows);
+		
 		for(var key in rows){
 			var row = rows[key];
-			return '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
+			html += '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
 					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.name+'</label></div>\
 					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.user+'</label></div>\
 					<div class="clear"></div>';			
 		}
+		return html;
 	};
 	return _r;
 })();
