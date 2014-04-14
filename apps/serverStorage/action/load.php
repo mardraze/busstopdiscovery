@@ -69,7 +69,6 @@ if(in_array($table, $config['TABLES'])){
 	if($limit_count){
 		$query .= ' LIMIT '.($limit_start ? ($limit_start.',') : '').$limit_count;
 	}
-
 	$result = _query($query);
 	while($row = _fetch_assoc($result)){
 		$data[] = $row;

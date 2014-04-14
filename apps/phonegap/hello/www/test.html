@@ -15,7 +15,8 @@
 		<script type="text/javascript" src="js/all.js"></script>
 		<script type="text/javascript" src="tests.js"></script>
 		<script type="text/javascript">
-			if(document.cookie){
+			var g_test_data = sessionStorage.getItem("test_data");
+			if(g_test_data){
 				$('#tests_start').hide();
 				Tests.start();
 			}

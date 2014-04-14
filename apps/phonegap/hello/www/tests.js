@@ -19,8 +19,8 @@ var Tests = Tests || (function () {
 	};
 	
 	_r.start = function(config){
-		if(!document.cookie){
-			document.cookie = JSON.stringify({
+		if(!g_test_data){
+			g_test_data = JSON.stringify({
 				'APP_start_exists' : Tests.NO_RESULT,
 				'APP_start_localstorage' : Tests.NO_RESULT,
 				'APP_start_serverstorage' : Tests.NO_RESULT,
@@ -29,14 +29,16 @@ var Tests = Tests || (function () {
 				'LocalStorage_remove_success' : Tests.NO_RESULT,
 				'LocalStorage_handle_error_event' : Tests.NO_RESULT,
 				'LocalStorage_handle_error_callback' : Tests.NO_RESULT,
+				'BusStopProxy_load_nearest' : Tests.NO_RESULT,
 			});
+			sessionStorage.setItem("test_data", g_test_data);
 		}
-		var tests = JSON.parse(document.cookie);
+		var tests = JSON.parse(g_test_data);
 		for(var key in tests){
 			if(tests[key] == Tests.NO_RESULT){
 				var onTestDone = function(result, error){
 					tests[key] = result;
-					document.cookie = JSON.stringify(tests);
+					sessionStorage.setItem("test_data", JSON.stringify(tests));
 					Tests.makeHtmlResult(key, tests[key], error);
 					if(result != Tests.RESULT_FAILURE){
 						setTimeout(function(){
@@ -51,7 +53,7 @@ var Tests = Tests || (function () {
 			}
 		}
 		$(Tests.div).append('<div>END TESTING</div>');
-		document.cookie = '';
+		sessionStorage.setItem("test_data", '');
 	};
 
 	
@@ -152,6 +154,42 @@ var Tests = Tests || (function () {
 		})})});
 	};
 	
+	_r.BusStopProxy_load_nearest = function(onTestDone){
+		Tests.runTest(onTestDone, function(getResult){ Tests.setup_app(function(){
+			var where = {
+				regionId: 999999,
+				in_circle : {
+					lat : 10,
+					lon : 10,
+					distance : 0.01,
+				}
+			}
+
+			var additionalParams = {
+				limit_start: 0, 
+				limit_count: 10, 
+				fields : [
+					{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
+					{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
+					{
+						'field' : ['latlon', where.in_circle.lat, where.in_circle.lon], 
+						'func' : 'ST_Distance', 
+						'alias' : 'distance',
+					},
+					{ 'field' : '*'},
+				],
+				order_by : 'distance',
+			};
+			BusStopProxy.getList(where, additionalParams, function(data){
+				if(data && data.success && data.count == 2 && data.data[0].name == 'TEST1' && data.data[1].name == 'TEST2'){
+					getResult(Tests.RESULT_SUCCESS);
+				}else{
+					getResult(Tests.RESULT_FAILURE);
+				}
+			});
+		}, true)});
+	};
+	
 	///////////////// PRIVATE /////////////////
 	
 	_r.setupLocalStorage = function(ready){
@@ -199,9 +237,15 @@ var Tests = Tests || (function () {
 		
 	};
 	
-	_r.setup_app = function(ready){
+	_r.setup_app = function(ready, withServerStorage){
 		$(document).on(LocalStorage.INITIALIZED, function(){
-			ready();
+			if(withServerStorage){
+				ServerStorage.init(APP.server_storage_url, function(){
+					ready();
+				});
+			}else{
+				ready();
+			}
 		});
 		UpdatePositionController.run = function(){};
 		BusStopView.show = function(){};
