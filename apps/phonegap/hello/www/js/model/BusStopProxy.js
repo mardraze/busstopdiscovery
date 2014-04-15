@@ -4,7 +4,11 @@ var BusStopProxy = BusStopProxy || (function () {
 	
 	_r.getList = function(kvPairs, options, onDone){
 		ServerStorage.load('busstop', kvPairs, options, function(list){
-			onDone(list);
+			if(list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
 		});
 	};
 

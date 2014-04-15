@@ -36,10 +36,10 @@ if(in_array($table, $config['TABLES'])){
 				if(@$v['alias'] && in_array(@$v['func'], $config['POSTGRES_AVAILABLE_FUNC'])){
 					$func = 'postgresql_func_str_'.$v['func'];
 					$fields[$k] = (function_exists($func) ? $func($v) : null);
-				}elseif($v['field'] == '*'){
+				}elseif(@$v['field'] == '*'){
 					$fields[$k] = '*';
 				}else{
-					$fields[$k] = _esc(q($v['field']));
+					$fields[$k] = _esc(q($v));
 				}
 			}
 			if($fields[$k] === null){
@@ -47,12 +47,11 @@ if(in_array($table, $config['TABLES'])){
 			}
 		}
 		$fieldStr = implode(',', $fields);
-		
 	}
 	$query = 'SELECT '.$fieldStr.' FROM '._esc($table);
 	if($kvPairs){
 		$set = array();
-		if($kvPairs['in_circle']){
+		if(@$kvPairs['in_circle']){
 			$set []= 'st_point_inside_circle(latlon, '.($kvPairs['in_circle']['lat'] * 1).', '.($kvPairs['in_circle']['lon'] * 1).', '.($kvPairs['in_circle']['distance'] * 1).')';
 			unset($kvPairs['in_circle']);
 		}

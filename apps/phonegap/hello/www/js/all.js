@@ -55,6 +55,42 @@ var APP = APP || (function () {
 
 	return _r;
 })();
+var ArriveController = ArriveController || (function () {
+
+	var _r = new Object();
+
+	_r.getCurrentArrives = function(busStopVO){
+		var list = busStopVO.arriveList;
+
+		var midnight = new Date();
+		midnight.setHours(0);
+		midnight.setMinutes(0);
+		midnight.setSeconds(0);
+		midnight.setMilliseconds(0);
+		var date = new Date();
+		var time = parseInt((date.getTime() - midnight.getTime()) / 1000);
+		var list2 = [];
+		var type = '1';
+		for(var i=0; i<list.length; i++){
+			if(time < parseInt(list[i].time) && list[i].type == type){
+				list2.push(list[i]);
+				if(list2.length >= 10){
+					break;
+				}
+			}
+		}
+		
+		list2.sort(function(a, b){
+			return parseInt(a.time) - parseInt(b.time);
+		});
+
+		busStopVO.arriveList = list2;
+		return busStopVO;
+	};
+
+	return _r;
+})();
+
 var BusStopController = BusStopController || (function () {
 
 	var _r = new Object();
@@ -86,14 +122,8 @@ var BusStopController = BusStopController || (function () {
 			
 		};
 		
-		BusStopProxy.getList(where, additionalParams, function(data){
-			if(data && data.success && data.count){
-				var list = data.data;
-				console.log(list);
-				onDone(list);
-			}else{
-				onDone({});
-			}
+		BusStopProxy.getList(where, additionalParams, function(list){
+			onDone(list);
 		});
 	};
 	
@@ -203,16 +233,18 @@ var UpdatePositionController = UpdatePositionController || (function () {
 var UserListController = UserListController || (function () {
 
 	var _r = new Object();
-
 	_r.addToList = function(id){
-		console.log('UserListController.addToList', id);
 		UserBusStopProxy.getOne(id, function(row){
 			if(!row){
 				BusStopProxy.getOne(id, function(origRow){
 					origRow.orig_id = origRow.id;
 					origRow.user_id = APP.userId;
 					origRow.id = undefined; //auto increment
-					UserBusStopProxy.save(origRow);
+					origRow.arriveList = [];
+					ArriveProxy.getList({busstop_id : origRow.orig_id}, {fields : ['id', 'line_id', 'time', 'type']}, function(list){
+						origRow.arriveList = list;
+						UserBusStopProxy.save(origRow);
+					});
 				});
 			}
 		});
@@ -220,8 +252,7 @@ var UserListController = UserListController || (function () {
 	
 	_r.loadList = function(onDone){
 		UserBusStopProxy.getList(function(list){
-			onDone([]);
-			//onDone(list ? list : []);
+			onDone(list ? list : []);
 		});
 	};
 
@@ -234,7 +265,11 @@ var ArriveProxy = ArriveProxy || (function () {
 	
 	_r.getList = function(kvPairs, options, onDone){
 		ServerStorage.load('arrive', kvPairs, options, function(list){
-			onDone(list);
+			if(list && list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
 		});
 	};
 
@@ -261,7 +296,11 @@ var BusStopProxy = BusStopProxy || (function () {
 	
 	_r.getList = function(kvPairs, options, onDone){
 		ServerStorage.load('busstop', kvPairs, options, function(list){
-			onDone(list);
+			if(list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
 		});
 	};
 
@@ -1327,7 +1366,7 @@ var BusStopView = BusStopView || (function () {
 			if(list.length == 0){
 				_r.emptyList();
 			}else{
-				$(_r.div).html(_r._toHtml(list[0]));
+				$(_r.div).html(_r._toHtml(ArriveController.getCurrentArrives(list[0])));
 			}
 		});
 		
@@ -1524,7 +1563,7 @@ var ViewTools = ViewTools || (function () {
 	_r.userFriendlyTime = function(weekSeconds){
 		var date = new Date();
 		var mondaysMidnight = new Date();
-		mondaysMidnight.setDate(date.getDate() - date.getDay());//Sunday is first day of week
+		//mondaysMidnight.setDate(date.getDate() - date.getDay());//Sunday is first day of week
 		mondaysMidnight.setHours(0);
 		mondaysMidnight.setMinutes(0);
 		mondaysMidnight.setSeconds(0);
@@ -1550,11 +1589,11 @@ var ViewTools = ViewTools || (function () {
 	
 	_r.busStopRowDetails = function(busStopVO){
 		console.log(busStopVO);
-		var arriveList = [{name : '199', time : 516000}];//busStopVO.list;
+		var arriveList = busStopVO.arriveList;//[{name : '199', time : 516000}];//busStopVO.list;
 		var html = '<table>\
 		<tr><td>'+busStopVO.name+'</td></tr>';
 		for(var i=0; i<arriveList.length; i++){
-			html += '<tr><td>'+arriveList[i].name+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
+			html += '<tr><td>'+arriveList[i].line_id+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
 		}
 		html += '<tr><td></td></tr>\
 		</table>';
@@ -1569,14 +1608,12 @@ var ViewTools = ViewTools || (function () {
 			prefix = '';
 		}
 		html = '';
-		console.log(rows);
-		
 		for(var key in rows){
 			var row = rows[key];
 			html += '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
 					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.name+'</label></div>\
-					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.user+'</label></div>\
-					<div class="clear"></div>';			
+					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+(row.user ? row.user : '')+'</label></div>\
+					<div class="clear"></div>';
 		}
 		return html;
 	};

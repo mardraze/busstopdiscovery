@@ -181,7 +181,7 @@ var Tests = Tests || (function () {
 				order_by : 'distance',
 			};
 			BusStopProxy.getList(where, additionalParams, function(data){
-				if(data && data.success && data.count == 2 && data.data[0].name == 'TEST1' && data.data[1].name == 'TEST2'){
+				if(data && data.length == 2 && data[0].name == 'TEST1' && data[1].name == 'TEST2'){
 					getResult(Tests.RESULT_SUCCESS);
 				}else{
 					getResult(Tests.RESULT_FAILURE);

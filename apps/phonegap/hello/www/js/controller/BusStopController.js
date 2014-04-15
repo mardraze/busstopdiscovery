@@ -29,14 +29,8 @@ var BusStopController = BusStopController || (function () {
 			
 		};
 		
-		BusStopProxy.getList(where, additionalParams, function(data){
-			if(data && data.success && data.count){
-				var list = data.data;
-				console.log(list);
-				onDone(list);
-			}else{
-				onDone({});
-			}
+		BusStopProxy.getList(where, additionalParams, function(list){
+			onDone(list);
 		});
 	};
 	

@@ -31,7 +31,7 @@ if($config['DB_TYPE'] == 'mysql'){
 }
 
 function q($str){
-	return @preg_replace('/[^a-zA-Z0-9*.]/', '', @substr($str, 0, 100));
+	return @preg_replace('/[^a-zA-Z0-9*._]/', '', @substr($str, 0, 100));
 }
 
 

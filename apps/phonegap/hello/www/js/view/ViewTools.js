@@ -5,7 +5,7 @@ var ViewTools = ViewTools || (function () {
 	_r.userFriendlyTime = function(weekSeconds){
 		var date = new Date();
 		var mondaysMidnight = new Date();
-		mondaysMidnight.setDate(date.getDate() - date.getDay());//Sunday is first day of week
+		//mondaysMidnight.setDate(date.getDate() - date.getDay());//Sunday is first day of week
 		mondaysMidnight.setHours(0);
 		mondaysMidnight.setMinutes(0);
 		mondaysMidnight.setSeconds(0);
@@ -29,16 +29,13 @@ var ViewTools = ViewTools || (function () {
 		return mondaysMidnight.toString();
 	};
 	
-	_r.busStopRowDetails = function(busStopVO){
-		console.log(busStopVO);
-		var arriveList = [{name : '199', time : 516000}];//busStopVO.list;
-		var html = '<table>\
-		<tr><td>'+busStopVO.name+'</td></tr>';
+	_r.busStopRowDetails = function(busStopVO, lineList, arriveList){
+		var html = '<table><tr><td>'+busStopVO.name+'</td></tr>';
+
 		for(var i=0; i<arriveList.length; i++){
-			html += '<tr><td>'+arriveList[i].name+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
+			html += '<tr><td>'+lineList[arriveList[i].line_id].name+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
 		}
-		html += '<tr><td></td></tr>\
-		</table>';
+		html += '<tr><td></td></tr></table>';
 		
 		return html;
 	};
@@ -50,14 +47,12 @@ var ViewTools = ViewTools || (function () {
 			prefix = '';
 		}
 		html = '';
-		console.log(rows);
-		
 		for(var key in rows){
 			var row = rows[key];
 			html += '<div class="cell lp"><input type="checkbox" id="'+prefix+'item_'+row.id+'" name="list_'+row.id+'" value="'+row.id+'"/></div>\
 					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.name+'</label></div>\
-					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+row.user+'</label></div>\
-					<div class="clear"></div>';			
+					<div class="cell"><label for="'+prefix+'item_'+row.id+'">'+(row.user ? row.user : '')+'</label></div>\
+					<div class="clear"></div>';
 		}
 		return html;
 	};

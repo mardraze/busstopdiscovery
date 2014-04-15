@@ -13,7 +13,7 @@ $config = array(
 		'pass' => 'marchello',
 		'db_name' => 'inzynierka',
 	),
-	'TABLES' => array('busstop'),
+	'TABLES' => array('busstop', 'arrive'),
 	'DB_TYPE' => 'postgresql',//'mysql', 'postgresql',
 	'POSTGRES_AVAILABLE_FUNC' => array('ST_X', 'ST_Y', 'ST_Distance',),
 );

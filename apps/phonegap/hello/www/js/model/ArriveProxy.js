@@ -4,7 +4,11 @@ var ArriveProxy = ArriveProxy || (function () {
 	
 	_r.getList = function(kvPairs, options, onDone){
 		ServerStorage.load('arrive', kvPairs, options, function(list){
-			onDone(list);
+			if(list && list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
 		});
 	};
 

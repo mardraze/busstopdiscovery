@@ -46,7 +46,7 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r._toHtml = function(busStopVO){
-		return ViewTools.busStopRowDetails(busStopVO);
+		return ViewTools.busStopRowDetails(busStopVO, lineList, arriveList);
 	};
 	_r.emptyList = function(){
 		BusStopView.hide();
@@ -62,7 +62,7 @@ var BusStopView = BusStopView || (function () {
 			if(list.length == 0){
 				_r.emptyList();
 			}else{
-				$(_r.div).html(_r._toHtml(list[0]));
+				$(_r.div).html(_r._toHtml(ArriveController.getCurrentArrives(list[0])));
 			}
 		});
 		
