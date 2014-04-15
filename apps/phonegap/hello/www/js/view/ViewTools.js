@@ -2,16 +2,15 @@ var ViewTools = ViewTools || (function () {
 
 	var _r = new Object();
 	
-	_r.userFriendlyTime = function(weekSeconds){
+	_r.userFriendlyTime = function(secondsFromMidnight){
 		var date = new Date();
-		var mondaysMidnight = new Date();
-		//mondaysMidnight.setDate(date.getDate() - date.getDay());//Sunday is first day of week
-		mondaysMidnight.setHours(0);
-		mondaysMidnight.setMinutes(0);
-		mondaysMidnight.setSeconds(0);
-		mondaysMidnight.setMilliseconds(0);
-		mondaysMidnight.setTime(mondaysMidnight.getTime() + (weekSeconds * 1000));
-		var timeOffset = ((mondaysMidnight.getTime() - date.getTime()) * 1);
+		var nextDate = new Date();
+		nextDate.setHours(0);
+		nextDate.setMinutes(0);
+		nextDate.setSeconds(0);
+		nextDate.setMilliseconds(0);
+		nextDate.setTime(nextDate.getTime() + (secondsFromMidnight * 1000));
+		var timeOffset = ((nextDate.getTime() - date.getTime()) * 1);
 		if(timeOffset < APP.friendlyTimeSeconds){
 			var minutes = parseInt((timeOffset/1000)/60);
 			if(minutes > 0){
@@ -26,7 +25,7 @@ var ViewTools = ViewTools || (function () {
 				return '-';
 			}
 		}
-		return mondaysMidnight.toString();
+		return nextDate.getHours()+':'+nextDate.getMinutes();
 	};
 	
 	_r.busStopRowDetails = function(busStopVO, lineSet, arriveList){
