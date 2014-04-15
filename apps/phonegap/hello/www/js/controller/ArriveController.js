@@ -5,6 +5,7 @@ var ArriveController = ArriveController || (function () {
 	_r.getCurrentArrives = function(busStopVO){
 		var list = busStopVO.arriveList;
 
+		
 		var midnight = new Date();
 		midnight.setHours(0);
 		midnight.setMinutes(0);

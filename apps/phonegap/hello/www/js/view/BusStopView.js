@@ -1,8 +1,10 @@
 var BusStopView = BusStopView || (function () {
 
-	var _r = new Object();
+	var _r = new Object();//extends
 	_r.div = '#BusStopView';
-
+	
+	_r.EMPTY_VIEW = 'BusStopView_EMPTY_VIEW';
+	
 	/**
 	* 
 	* @property {BusStopVO} busStop
@@ -45,33 +47,8 @@ var BusStopView = BusStopView || (function () {
 		
 	};
 	
-	_r._toHtml = function(busStopVO, onDone){
-		var arriveList = ArriveController.getCurrentArrives(busStopVO);
-		LineController.getListFromCurrentRegion(function(lineSet){
-			onDone(ViewTools.busStopRowDetails(busStopVO, lineSet, arriveList));
-		});
-	};
-	
-	_r.emptyList = function(){
-		BusStopView.hide();
-		UserListEmptyView.show();
-	};
-	
-	/**
-	* 
-	* @method getNearest
-	*/
 	_r.getNearest = function(){
-		UserListController.loadList(function(list){
-			if(list.length == 0){
-				_r.emptyList();
-			}else{
-				_r._toHtml(list[0], function(html){
-					$(_r.div).html(html);
-				});
-			}
-		});
-		
+
 	};
 	/**
 	* 
@@ -103,11 +80,30 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r.hide = function(){
-		$(this.div).hide();
+		$(BusStopView.div).hide();
+	};
+
+	_r.showBusStop = function(busStop){
+		BusStopView.busStop = busStop;
+		var arriveList = ArriveController.getCurrentArrives(busStop);
+		LineController.getListFromCurrentRegion(function(lineSet){
+			$(BusStopView.div).html(ViewTools.busStopRowDetails(busStop, lineSet, arriveList));
+			$(BusStopView.div).show();
+		});
 	};
 	
-	_r.show = function(){
-		this.getNearest();
+	_r.show = function(busStop){
+		if(busStop){
+			BusStopView.showBusStop(busStop);
+		}else{
+			UserListController.loadList(function(list){
+				if(list.length == 0){
+					$(document).trigger(BusStopView.EMPTY_VIEW);
+				}else{
+					BusStopView.showBusStop(list[0]);
+				}
+			});
+		}
 	};
 	
 	return _r;

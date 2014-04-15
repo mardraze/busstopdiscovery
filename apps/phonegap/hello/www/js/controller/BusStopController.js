@@ -5,7 +5,7 @@ var BusStopController = BusStopController || (function () {
 	_r.searchNearest = function(onDone){
 		var where = {
 			regionId: RegionController.currentRegion,
-			in_circle : {
+			latlon : {
 				func  : 'in_circle',
 				lat : 54.369546,
 				lon : 18.607197,
@@ -20,7 +20,7 @@ var BusStopController = BusStopController || (function () {
 				{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
 				{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
 				{
-					'field' : ['latlon', where.in_circle.lat, where.in_circle.lon], 
+					'field' : ['latlon', where.latlon.lat, where.latlon.lon], 
 					'func' : 'ST_Distance', 
 					'alias' : 'distance',
 				},

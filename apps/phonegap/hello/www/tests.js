@@ -9,8 +9,10 @@ var Tests = Tests || (function () {
 	_r.div = '#test_result';
 	
 	_r.APP_CONFIG = {
-		'userId' : 'asdasdasd',
+		'app_div' : '#app',
+		'userId' : 'as3dasdasd',
 		'server_storage_url' : 'http://localhost/projekty/inzynierka/busstopdiscovery/apps/serverStorage',
+		'friendlyTimeSeconds' : (60 * 20 * 1000),
 	};
 	
 	_r.CONFIG = {
@@ -30,6 +32,9 @@ var Tests = Tests || (function () {
 				'LocalStorage_handle_error_event' : Tests.NO_RESULT,
 				'LocalStorage_handle_error_callback' : Tests.NO_RESULT,
 				'BusStopProxy_load_nearest' : Tests.NO_RESULT,
+				'UserListController_addToList' : Tests.NO_RESULT,
+				'ArriveController_getCurrentArrives' : Tests.NO_RESULT,
+				'LineController_getListFromCurrentRegion' : Tests.NO_RESULT,
 			});
 			sessionStorage.setItem("test_data", g_test_data);
 		}
@@ -40,6 +45,7 @@ var Tests = Tests || (function () {
 					tests[key] = result;
 					sessionStorage.setItem("test_data", JSON.stringify(tests));
 					Tests.makeHtmlResult(key, tests[key], error);
+					localStorage.clear();
 					if(result != Tests.RESULT_FAILURE){
 						setTimeout(function(){
 							window.location.reload();
@@ -153,44 +159,86 @@ var Tests = Tests || (function () {
 			});
 		})})});
 	};
-	
-	_r.BusStopProxy_load_nearest = function(onTestDone){
-		Tests.runTest(onTestDone, function(getResult){ Tests.setup_app(function(){
-			var where = {
-				regionId: 999999,
-				in_circle : {
-					lat : 10,
-					lon : 10,
-					distance : 0.01,
-				}
-			}
 
-			var additionalParams = {
-				limit_start: 0, 
-				limit_count: 10, 
-				fields : [
-					{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
-					{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
-					{
-						'field' : ['latlon', where.in_circle.lat, where.in_circle.lon], 
-						'func' : 'ST_Distance', 
-						'alias' : 'distance',
-					},
-					{ 'field' : '*'},
-				],
-				order_by : 'distance',
-			};
-			BusStopProxy.getList(where, additionalParams, function(data){
-				if(data && data.length == 2 && data[0].name == 'TEST1' && data[1].name == 'TEST2'){
+	_r.BusStopProxy_load_nearest = function(onTestDone){
+		Tests.runTest(onTestDone, function(getResult){ Tests.setup_app(function(){Tests.getNearestsBusStops(function(data){
+			if(data && data.length == 2 && data[0].name == 'TEST1' && data[1].name == 'TEST2'){
+				getResult(Tests.RESULT_SUCCESS);
+			}else{
+				getResult(Tests.RESULT_FAILURE);
+			}
+		})}, true)});
+	};
+	
+	_r.UserListController_addToList = function(onTestDone){
+		Tests.runTest(onTestDone, function(getResult){ Tests.setup_app(function(){Tests.getNearestsBusStops(function(data){
+			UserListController.addToList(data[0].id, function(row){
+				if(data[0].id == row.orig_id && row.arriveList && row.arriveList.length == 1 && row.arriveList[0].id == "999999"){
 					getResult(Tests.RESULT_SUCCESS);
 				}else{
 					getResult(Tests.RESULT_FAILURE);
 				}
 			});
-		}, true)});
+		})}, true)});
 	};
 	
+	_r.ArriveController_getCurrentArrives = function(onTestDone){
+		Tests.runTest(onTestDone, function(getResult){ Tests.setup_app(function(){Tests.getNearestsBusStops(function(data){ UserListController.addToList(data[0].id, function(row){
+			var currentArrives = ArriveController.getCurrentArrives(row);
+			if(currentArrives && currentArrives.length == 1){ //TODO: do it better
+				getResult(Tests.RESULT_SUCCESS);
+			}else{
+				getResult(Tests.RESULT_FAILURE);
+			}
+		})})}, true)});
+	};
+
+	_r.LineController_getListFromCurrentRegion = function(onTestDone){
+		Tests.runTest(onTestDone, function(getResult){ Tests.setup_app(function(){
+			RegionController.currentRegion = 999999;
+			LineController.getListFromCurrentRegion(function(lineSet){
+				console.log(lineSet);
+				if(lineSet && lineSet["999999"] && lineSet["999999"].name == "TEST LINE"){
+					getResult(Tests.RESULT_SUCCESS);
+				}else{
+					getResult(Tests.RESULT_FAILURE);
+				}
+			});
+			
+		}, true)});
+	};
+
+	
 	///////////////// PRIVATE /////////////////
+	
+	_r.getNearestsBusStops = function(onDone){
+		var where = {
+			regionId: 999999,
+			latlon : {
+				func : 'in_circle',
+				lat : 10,
+				lon : 10,
+				distance : 0.01,
+			}
+		}
+
+		var additionalParams = {
+			limit_start: 0, 
+			limit_count: 10, 
+			fields : [
+				{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
+				{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
+				{
+					'field' : ['latlon', where.latlon.lat, where.latlon.lon], 
+					'func' : 'ST_Distance', 
+					'alias' : 'distance',
+				},
+				{ 'field' : '*'},
+			],
+			order_by : 'distance',
+		};
+		BusStopProxy.getList(where, additionalParams, onDone);
+	};
 	
 	_r.setupLocalStorage = function(ready){
 		var counter = 0;
@@ -237,7 +285,7 @@ var Tests = Tests || (function () {
 		
 	};
 	
-	_r.setup_app = function(ready, withServerStorage){
+	_r.setup_app = function(ready, withServerStorage, withBusStopView_show){
 		$(document).on(LocalStorage.INITIALIZED, function(){
 			if(withServerStorage){
 				ServerStorage.init(APP.server_storage_url, function(){
@@ -248,7 +296,10 @@ var Tests = Tests || (function () {
 			}
 		});
 		UpdatePositionController.run = function(){};
-		BusStopView.show = function(){};
+		if(!withBusStopView_show){
+			BusStopView.show = function(){};
+		}
+		
 		APP.start(Tests.APP_CONFIG);
 	};
 	

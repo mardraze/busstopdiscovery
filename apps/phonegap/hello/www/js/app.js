@@ -17,11 +17,11 @@ var APP = APP || (function () {
 		}
 		$(document).on(LocalStorage.INITIALIZED, function(){
 			ServerStorage.init(APP.server_storage_url, function(){
+				ViewManager.init(APP.app_div);
 				UpdatePositionController.run();
-				BusStopView.show();
 			});
 		});
-		_r._setupStorage();
+		APP._setupStorage();
 	};
 	
 	_r._setupStorage = function(){

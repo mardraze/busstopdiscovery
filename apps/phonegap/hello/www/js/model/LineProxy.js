@@ -14,7 +14,7 @@ var LineProxy = LineProxy || (function () {
 	
 	_r.getListByCompanyIds = function(ids, options, onDone){
 		var where = {
-			'id' : {
+			'company_id' : {
 				func : 'in',
 				values : ids,
 			},

@@ -23,7 +23,7 @@ function sql_func_ST_Y($v){
 
 function sql_func_ST_Distance($v){
 	$params = $v['field'];
-	return 'ST_Distance('.$params[0].', ST_GeomFromText(\'POINT('.(@$params[1] * 1.0).' '.(@$params[2] * 1.0).')\',4326)) as "'.q(@$v['alias']).'"';
+	return ' round(CAST(ST_Distance_Sphere(ST_Centroid('._esc(q($params[0])).'), ST_GeomFromText(\'POINT('.(@$params[1] * 1.0).' '.(@$params[2] * 1.0).')\',4326)) As numeric),2) as "'.q(@$v['alias']).'" ';
 }
 
 function sql_func_in_circle($field, $params){

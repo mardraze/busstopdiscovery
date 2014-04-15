@@ -9,27 +9,7 @@
 		<link rel="stylesheet" type="text/css" href="css/index.css"/>
     </head>
     <body>
-		<div id="BusStopView"></div>
-		<div id="BusStopListView" style="display:none"></div>
-		<div id="UserListEmptyView" style="display:none">
-			<p>Witaj! Nie masz jeszcze przystanków więc dodaj do swojej listy najbliższy przystanek. Oto nasze propozycje</p>
-			<form id="UserListEmptyView_form">
-				<div id="UserListEmptyView_items">
-					<div class="cell lp"><input type="checkbox" id="UserListEmptyView_item_1" name="list_1" value="1"/></div>
-					<div class="cell"><label for="UserListEmptyView_item_1">Miszewskiego</label></div>
-					<div class="cell"><label for="UserListEmptyView_item_1">marcindr1</label></div>
-					<div class="clear"></div>
-					<div class="cell lp"><input type="checkbox" id="UserListEmptyView_item_2" name="list_2" value="2"/></div>
-					<div class="cell"><label for="UserListEmptyView_item_2">Traugutta-Sobieskiego</label></div>
-					<div class="cell"><label for="UserListEmptyView_item_2">marcindr1</label></div>
-					<div class="clear"></div>
-				</div>
-				<div id="UserListEmptyView_loading">Loading ...</div>
-				
-				<div><input type="button" id="UserListEmptyView_submit" value="Dodaj zaznaczone"/></div>
-				<div class="clear"></div>
-			</form>
-		</div>
+		<div id="app"></div>
 		<script type="text/javascript" src="phonegap.js"></script>
 		<script type="text/javascript" src="jquery.min.js"></script>
 		<script type="text/javascript" src="stacktrace.js"></script>
@@ -43,14 +23,19 @@
 			*/
 			
 			APP.start({
+				'app_div' : '#app',
 				'userId' : 'as3dasdasd',
 				'server_storage_url' : 'http://localhost/projekty/inzynierka/busstopdiscovery/apps/serverStorage',
 				'friendlyTimeSeconds' : (60 * 20 * 1000),
 			});
-			
+
+			function dumpLocalStorage(){
+				console.log(localStorage.getItem(localStorage.key(0)).length, localStorage);
+			}
+
 		</script>
 		<input type="button" value="CLEAR LOCAL STORAGE" onclick="localStorage.clear();"/><br/>
-		<input type="button" value="DUMP LOCAL STORAGE" onclick="console.log(localStorage);"/><br/>
+		<input type="button" value="DUMP LOCAL STORAGE" onclick="dumpLocalStorage()"/><br/>
 		
     </body>
 </html>

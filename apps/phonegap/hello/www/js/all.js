@@ -17,11 +17,11 @@ var APP = APP || (function () {
 		}
 		$(document).on(LocalStorage.INITIALIZED, function(){
 			ServerStorage.init(APP.server_storage_url, function(){
+				ViewManager.init(APP.app_div);
 				UpdatePositionController.run();
-				BusStopView.show();
 			});
 		});
-		_r._setupStorage();
+		APP._setupStorage();
 	};
 	
 	_r._setupStorage = function(){
@@ -62,6 +62,7 @@ var ArriveController = ArriveController || (function () {
 	_r.getCurrentArrives = function(busStopVO){
 		var list = busStopVO.arriveList;
 
+		
 		var midnight = new Date();
 		midnight.setHours(0);
 		midnight.setMinutes(0);
@@ -97,7 +98,7 @@ var BusStopController = BusStopController || (function () {
 	_r.searchNearest = function(onDone){
 		var where = {
 			regionId: RegionController.currentRegion,
-			in_circle : {
+			latlon : {
 				func  : 'in_circle',
 				lat : 54.369546,
 				lon : 18.607197,
@@ -112,7 +113,7 @@ var BusStopController = BusStopController || (function () {
 				{ 'field' : 'latlon', 'func' : 'ST_X', 'alias' : 'x'},
 				{ 'field' : 'latlon', 'func' : 'ST_Y', 'alias' : 'y'},
 				{
-					'field' : ['latlon', where.in_circle.lat, where.in_circle.lon], 
+					'field' : ['latlon', where.latlon.lat, where.latlon.lon], 
 					'func' : 'ST_Distance', 
 					'alias' : 'distance',
 				},
@@ -134,26 +135,26 @@ var LineController = LineController || (function () {
 
 	var _r = new Object();
 	
-	_r.cache = {};
+	_r.lineSetCache = {};
 	
 	_r.getListFromCurrentRegion = function(onDone){
 		var currentRegion = RegionController.currentRegion;
 		
-		if(LineController.cache[currentRegion]){
-			onDone(LineController.cache[currentRegion]);
+		if(LineController.lineSetCache[currentRegion]){
+			onDone(LineController.lineSetCache[currentRegion]);
 		}else{
 			CompanyProxy.getList({region_id: currentRegion}, {}, function(companyList){
 				var ids = [];
 				for(var i=0; i<companyList.length; i++){
 					ids.push(companyList[i].id);
 				}
-				LineProxy.getListByCompanyIds(ids, {}, function(){
-					var lines2 = {};
-					for(var i=0; i<lines.length; i++){
-						lines2[lines[i].id] = lines[i];
+				LineProxy.getListByCompanyIds(ids, {}, function(list){
+					var lineSet = {};
+					for(var i=0; i<list.length; i++){
+						lineSet[list[i].id] = list[i];
 					}
-					LineController.cache[currentRegion] = lines2;
-					onDone(LineController.cache[currentRegion]);
+					LineController.lineSetCache[currentRegion] = lineSet;
+					onDone(LineController.lineSetCache[currentRegion]);
 				});
 			});
 		}
@@ -265,7 +266,7 @@ var UpdatePositionController = UpdatePositionController || (function () {
 var UserListController = UserListController || (function () {
 
 	var _r = new Object();
-	_r.addToList = function(id){
+	_r.addToList = function(id, onDone){
 		UserBusStopProxy.getOne(id, function(row){
 			if(!row){
 				BusStopProxy.getOne(id, function(origRow){
@@ -276,6 +277,9 @@ var UserListController = UserListController || (function () {
 					ArriveProxy.getList({busstop_id : origRow.orig_id}, {fields : ['id', 'line_id', 'time', 'type']}, function(list){
 						origRow.arriveList = list;
 						UserBusStopProxy.save(origRow);
+						if(onDone){
+							onDone(origRow);
+						}
 					});
 				});
 			}
@@ -288,6 +292,48 @@ var UserListController = UserListController || (function () {
 		});
 	};
 
+	return _r;
+})();
+
+var ViewManager = ViewManager || (function () {
+
+	var _r = new Object();
+	
+	_r.views = ['BusStopListView', 'BusStopView', 'MapView', 'UserListEmptyView', 'UserListView', 'UserView'];
+	
+	_r.initialView = 'BusStopView';
+	
+	_r.currentView = '';
+	
+	_r.showView = function(className){
+		if(ViewManager.views.indexOf(className) != -1){
+			if(window[ViewManager.currentView]){
+				window[ViewManager.currentView].hide();
+			}
+			ViewManager.currentView = className;
+			window[className].show();
+		}
+	};
+	
+	_r.init = function(mainDiv){
+		var views = ViewManager.views;
+		var html = '';
+		for(var i=0; i<views.length; i++){
+			html += '<div id="'+views[i]+'" class="view"></div>';
+		}
+		$(mainDiv).html(html);
+		ViewManager.addListeners();
+		ViewManager.showView(ViewManager.initialView);
+	};
+	
+	_r.addListeners = function(){
+		$(document).on(BusStopView.EMPTY_VIEW, function(){
+			ViewManager.showView('UserListEmptyView');
+		});
+
+	};
+	
+	
 	return _r;
 })();
 
@@ -400,7 +446,7 @@ var LineProxy = LineProxy || (function () {
 	
 	_r.getListByCompanyIds = function(ids, options, onDone){
 		var where = {
-			'id' : {
+			'company_id' : {
 				func : 'in',
 				values : ids,
 			},
@@ -1415,9 +1461,11 @@ var BusStopListView = BusStopListView || (function () {
 
 var BusStopView = BusStopView || (function () {
 
-	var _r = new Object();
+	var _r = new Object();//extends
 	_r.div = '#BusStopView';
-
+	
+	_r.EMPTY_VIEW = 'BusStopView_EMPTY_VIEW';
+	
 	/**
 	* 
 	* @property {BusStopVO} busStop
@@ -1460,33 +1508,8 @@ var BusStopView = BusStopView || (function () {
 		
 	};
 	
-	_r._toHtml = function(busStopVO, onDone){
-		var arriveList = ArriveController.getCurrentArrives(busStopVO);
-		LineController.getListFromCurrentRegion(function(lineSet){
-			onDone(ViewTools.busStopRowDetails(busStopVO, lineSet, arriveList));
-		});
-	};
-	
-	_r.emptyList = function(){
-		BusStopView.hide();
-		UserListEmptyView.show();
-	};
-	
-	/**
-	* 
-	* @method getNearest
-	*/
 	_r.getNearest = function(){
-		UserListController.loadList(function(list){
-			if(list.length == 0){
-				_r.emptyList();
-			}else{
-				_r._toHtml(list[0], function(html){
-					$(_r.div).html(html);
-				});
-			}
-		});
-		
+
 	};
 	/**
 	* 
@@ -1518,11 +1541,30 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r.hide = function(){
-		$(this.div).hide();
+		$(BusStopView.div).hide();
+	};
+
+	_r.showBusStop = function(busStop){
+		BusStopView.busStop = busStop;
+		var arriveList = ArriveController.getCurrentArrives(busStop);
+		LineController.getListFromCurrentRegion(function(lineSet){
+			$(BusStopView.div).html(ViewTools.busStopRowDetails(busStop, lineSet, arriveList));
+			$(BusStopView.div).show();
+		});
 	};
 	
-	_r.show = function(){
-		this.getNearest();
+	_r.show = function(busStop){
+		if(busStop){
+			BusStopView.showBusStop(busStop);
+		}else{
+			UserListController.loadList(function(list){
+				if(list.length == 0){
+					$(document).trigger(BusStopView.EMPTY_VIEW);
+				}else{
+					BusStopView.showBusStop(list[0]);
+				}
+			});
+		}
 	};
 	
 	return _r;
@@ -1569,8 +1611,23 @@ var UserListEmptyView = UserListEmptyView || (function () {
 	_r.div_submit = '#UserListEmptyView_submit';
 	_r.div_items = '#UserListEmptyView_items';
 	_r.div_loading = '#UserListEmptyView_loading';
+	_r.initialized = false;
+
+	_r.init = function(){
+		if(!UserListEmptyView.initialized){
+			UserListEmptyView.initialized = true;
+			var html = '<p>Witaj! Nie masz jeszcze przystanków więc dodaj do swojej listy najbliższy przystanek. Oto nasze propozycje</p>\
+			<form id="UserListEmptyView_form">\
+				<div id="UserListEmptyView_items"></div>\
+				<div id="UserListEmptyView_loading">'+__('Wczytywanie ...')+'</div>\
+				<div><input type="button" id="UserListEmptyView_submit" value="'+__('Dodaj zaznaczone')+'"/></div>\
+			</form>';
+			$(UserListEmptyView.div).html(html);
+		}
+	};
 	
 	_r.show = function(){
+		UserListEmptyView.init();
 		$(_r.div_items).html('');
 		$(_r.div_items).hide();
 		$(_r.div_loading).show();
@@ -1677,16 +1734,15 @@ var ViewTools = ViewTools || (function () {
 
 	var _r = new Object();
 	
-	_r.userFriendlyTime = function(weekSeconds){
+	_r.userFriendlyTime = function(secondsFromMidnight){
 		var date = new Date();
-		var mondaysMidnight = new Date();
-		//mondaysMidnight.setDate(date.getDate() - date.getDay());//Sunday is first day of week
-		mondaysMidnight.setHours(0);
-		mondaysMidnight.setMinutes(0);
-		mondaysMidnight.setSeconds(0);
-		mondaysMidnight.setMilliseconds(0);
-		mondaysMidnight.setTime(mondaysMidnight.getTime() + (weekSeconds * 1000));
-		var timeOffset = ((mondaysMidnight.getTime() - date.getTime()) * 1);
+		var nextDate = new Date();
+		nextDate.setHours(0);
+		nextDate.setMinutes(0);
+		nextDate.setSeconds(0);
+		nextDate.setMilliseconds(0);
+		nextDate.setTime(nextDate.getTime() + (secondsFromMidnight * 1000));
+		var timeOffset = ((nextDate.getTime() - date.getTime()) * 1);
 		if(timeOffset < APP.friendlyTimeSeconds){
 			var minutes = parseInt((timeOffset/1000)/60);
 			if(minutes > 0){
@@ -1701,7 +1757,7 @@ var ViewTools = ViewTools || (function () {
 				return '-';
 			}
 		}
-		return mondaysMidnight.toString();
+		return nextDate.getHours()+':'+nextDate.getMinutes();
 	};
 	
 	_r.busStopRowDetails = function(busStopVO, lineSet, arriveList){
