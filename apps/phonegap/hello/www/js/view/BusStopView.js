@@ -45,9 +45,13 @@ var BusStopView = BusStopView || (function () {
 		
 	};
 	
-	_r._toHtml = function(busStopVO){
-		return ViewTools.busStopRowDetails(busStopVO, lineList, arriveList);
+	_r._toHtml = function(busStopVO, onDone){
+		var arriveList = ArriveController.getCurrentArrives(busStopVO);
+		LineController.getListFromCurrentRegion(function(lineSet){
+			onDone(ViewTools.busStopRowDetails(busStopVO, lineSet, arriveList));
+		});
 	};
+	
 	_r.emptyList = function(){
 		BusStopView.hide();
 		UserListEmptyView.show();
@@ -62,7 +66,9 @@ var BusStopView = BusStopView || (function () {
 			if(list.length == 0){
 				_r.emptyList();
 			}else{
-				$(_r.div).html(_r._toHtml(ArriveController.getCurrentArrives(list[0])));
+				_r._toHtml(list[0], function(html){
+					$(_r.div).html(html);
+				});
 			}
 		});
 		

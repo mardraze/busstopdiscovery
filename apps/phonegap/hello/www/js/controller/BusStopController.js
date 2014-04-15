@@ -6,10 +6,11 @@ var BusStopController = BusStopController || (function () {
 		var where = {
 			regionId: RegionController.currentRegion,
 			in_circle : {
+				func  : 'in_circle',
 				lat : 54.369546,
 				lon : 18.607197,
 				distance : 0.01,
-			}
+			}, 
 		}
 
 		var additionalParams = {

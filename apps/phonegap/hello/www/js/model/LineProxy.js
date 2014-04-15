@@ -11,6 +11,23 @@ var LineProxy = LineProxy || (function () {
 			}
 		});
 	};
+	
+	_r.getListByCompanyIds = function(ids, options, onDone){
+		var where = {
+			'id' : {
+				func : 'in',
+				values : ids,
+			},
+		};
+	
+		ServerStorage.load('line', where, options, function(list){
+			if(list && list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
+		});
+	};
 
 	_r.getOne = function(id, onDoneGetRow){
 		ServerStorage.load('line', {'id' : id}, {}, function(result){

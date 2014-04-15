@@ -27,8 +27,7 @@ var ArriveController = ArriveController || (function () {
 			return parseInt(a.time) - parseInt(b.time);
 		});
 
-		busStopVO.arriveList = list2;
-		return busStopVO;
+		return list2;
 	};
 
 	return _r;

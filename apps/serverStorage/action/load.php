@@ -9,22 +9,31 @@ $order_by = q(@$_REQUEST['order_by']);
 $order_direction = @q($_REQUEST['order_direction']);
 $fields = @$_REQUEST['fields'];
 
-function postgresql_func_str_ST_XY($v){
+function sql_func_ST_XY($v){
 	return $v['func'].'('._esc(q($v['field'])).') as "'.q(@$v['alias']).'"';
 }
 
-function postgresql_func_str_ST_X($v){
-	return postgresql_func_str_ST_XY($v);
+function sql_func_ST_X($v){
+	return sql_func_ST_XY($v);
 }
 
-function postgresql_func_str_ST_Y($v){
-	return postgresql_func_str_ST_XY($v);
+function sql_func_ST_Y($v){
+	return sql_func_ST_XY($v);
 }
 
-function postgresql_func_str_ST_Distance($v){
+function sql_func_ST_Distance($v){
 	$params = $v['field'];
 	return 'ST_Distance('.$params[0].', ST_GeomFromText(\'POINT('.(@$params[1] * 1.0).' '.(@$params[2] * 1.0).')\',4326)) as "'.q(@$v['alias']).'"';
 }
+
+function sql_func_in_circle($field, $params){
+	return ' st_point_inside_circle('._esc(q($field)).', '.($params['lat'] * 1).', '.($params['lon'] * 1).', '.($params['distance'] * 1).') ';
+}
+
+function sql_func_in($field, $params){
+	return ' '._esc(q($field)).' IN (\''.implode("', '", $params['values']).'\') ';
+}
+
 
 $data = array();
 $count = 0;
@@ -34,7 +43,7 @@ if(in_array($table, $config['TABLES'])){
 		foreach($fields as $k => $v){
 			if(@$v['field']){
 				if(@$v['alias'] && in_array(@$v['func'], $config['POSTGRES_AVAILABLE_FUNC'])){
-					$func = 'postgresql_func_str_'.$v['func'];
+					$func = 'sql_func_'.$v['func'];
 					$fields[$k] = (function_exists($func) ? $func($v) : null);
 				}elseif(@$v['field'] == '*'){
 					$fields[$k] = '*';
@@ -51,13 +60,17 @@ if(in_array($table, $config['TABLES'])){
 	$query = 'SELECT '.$fieldStr.' FROM '._esc($table);
 	if($kvPairs){
 		$set = array();
-		if(@$kvPairs['in_circle']){
-			$set []= 'st_point_inside_circle(latlon, '.($kvPairs['in_circle']['lat'] * 1).', '.($kvPairs['in_circle']['lon'] * 1).', '.($kvPairs['in_circle']['distance'] * 1).')';
-			unset($kvPairs['in_circle']);
-		}
-		
 		foreach($kvPairs as $k => $v){
-			$set []= _esc(q($k))."='".q($v)."'";
+			if(is_array($v) && array_key_exists('func', $v)){
+				$func = 'sql_func_'.$v['func'];
+				if(function_exists($func)){
+					$set []= $func($k, $v);
+				}else{
+					die('function '.$func.' not exists');
+				}
+			}else{
+				$set []= _esc(q($k))."='".q($v)."'";
+			}
 		}
 		$query .= ' WHERE '.implode(' AND ', $set);
 	}

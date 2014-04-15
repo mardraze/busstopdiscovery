@@ -29,11 +29,12 @@ var ViewTools = ViewTools || (function () {
 		return mondaysMidnight.toString();
 	};
 	
-	_r.busStopRowDetails = function(busStopVO, lineList, arriveList){
+	_r.busStopRowDetails = function(busStopVO, lineSet, arriveList){
 		var html = '<table><tr><td>'+busStopVO.name+'</td></tr>';
-
 		for(var i=0; i<arriveList.length; i++){
-			html += '<tr><td>'+lineList[arriveList[i].line_id].name+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
+			html += '<tr><td>'
+			+(lineSet[arriveList[i].line_id] ? lineSet[arriveList[i].line_id].name : '')
+			+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
 		}
 		html += '<tr><td></td></tr></table>';
 		

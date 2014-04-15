@@ -84,8 +84,7 @@ var ArriveController = ArriveController || (function () {
 			return parseInt(a.time) - parseInt(b.time);
 		});
 
-		busStopVO.arriveList = list2;
-		return busStopVO;
+		return list2;
 	};
 
 	return _r;
@@ -99,10 +98,11 @@ var BusStopController = BusStopController || (function () {
 		var where = {
 			regionId: RegionController.currentRegion,
 			in_circle : {
+				func  : 'in_circle',
 				lat : 54.369546,
 				lon : 18.607197,
 				distance : 0.01,
-			}
+			}, 
 		}
 
 		var additionalParams = {
@@ -127,6 +127,38 @@ var BusStopController = BusStopController || (function () {
 		});
 	};
 	
+	return _r;
+})();
+
+var LineController = LineController || (function () {
+
+	var _r = new Object();
+	
+	_r.cache = {};
+	
+	_r.getListFromCurrentRegion = function(onDone){
+		var currentRegion = RegionController.currentRegion;
+		
+		if(LineController.cache[currentRegion]){
+			onDone(LineController.cache[currentRegion]);
+		}else{
+			CompanyProxy.getList({region_id: currentRegion}, {}, function(companyList){
+				var ids = [];
+				for(var i=0; i<companyList.length; i++){
+					ids.push(companyList[i].id);
+				}
+				LineProxy.getListByCompanyIds(ids, {}, function(){
+					var lines2 = {};
+					for(var i=0; i<lines.length; i++){
+						lines2[lines[i].id] = lines[i];
+					}
+					LineController.cache[currentRegion] = lines2;
+					onDone(LineController.cache[currentRegion]);
+				});
+			});
+		}
+	};
+
 	return _r;
 })();
 
@@ -316,6 +348,85 @@ var BusStopProxy = BusStopProxy || (function () {
 
 	_r.save = function(kvPairs, onDone){
 		ServerStorage.save('busstop', kvPairs, onDone);
+	};
+
+	return _r;
+})();
+
+var CompanyProxy = CompanyProxy || (function () {
+
+	var _r = new Object();
+	
+	_r.getList = function(kvPairs, options, onDone){
+		ServerStorage.load('company', kvPairs, options, function(list){
+			if(list && list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
+		});
+	};
+
+	_r.getOne = function(id, onDoneGetRow){
+		ServerStorage.load('company', {'id' : id}, {}, function(result){
+			if(result && result.success && result.data.length > 0){
+				onDoneGetRow(result.data[0]);
+			}else{
+				onDoneGetRow();
+			}
+		});
+	};
+
+	_r.save = function(kvPairs, onDone){
+		ServerStorage.save('company', kvPairs, onDone);
+	};
+
+	return _r;
+})();
+
+var LineProxy = LineProxy || (function () {
+
+	var _r = new Object();
+	
+	_r.getList = function(kvPairs, options, onDone){
+		ServerStorage.load('line', kvPairs, options, function(list){
+			if(list && list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
+		});
+	};
+	
+	_r.getListByCompanyIds = function(ids, options, onDone){
+		var where = {
+			'id' : {
+				func : 'in',
+				values : ids,
+			},
+		};
+	
+		ServerStorage.load('line', where, options, function(list){
+			if(list && list.success){
+				onDone(list.data);
+			}else{
+				onDone([]);
+			}
+		});
+	};
+
+	_r.getOne = function(id, onDoneGetRow){
+		ServerStorage.load('line', {'id' : id}, {}, function(result){
+			if(result && result.success && result.data.length > 0){
+				onDoneGetRow(result.data[0]);
+			}else{
+				onDoneGetRow();
+			}
+		});
+	};
+
+	_r.save = function(kvPairs, onDone){
+		ServerStorage.save('line', kvPairs, onDone);
 	};
 
 	return _r;
@@ -1349,9 +1460,13 @@ var BusStopView = BusStopView || (function () {
 		
 	};
 	
-	_r._toHtml = function(busStopVO){
-		return ViewTools.busStopRowDetails(busStopVO);
+	_r._toHtml = function(busStopVO, onDone){
+		var arriveList = ArriveController.getCurrentArrives(busStopVO);
+		LineController.getListFromCurrentRegion(function(lineSet){
+			onDone(ViewTools.busStopRowDetails(busStopVO, lineSet, arriveList));
+		});
 	};
+	
 	_r.emptyList = function(){
 		BusStopView.hide();
 		UserListEmptyView.show();
@@ -1366,7 +1481,9 @@ var BusStopView = BusStopView || (function () {
 			if(list.length == 0){
 				_r.emptyList();
 			}else{
-				$(_r.div).html(_r._toHtml(ArriveController.getCurrentArrives(list[0])));
+				_r._toHtml(list[0], function(html){
+					$(_r.div).html(html);
+				});
 			}
 		});
 		
@@ -1587,16 +1704,14 @@ var ViewTools = ViewTools || (function () {
 		return mondaysMidnight.toString();
 	};
 	
-	_r.busStopRowDetails = function(busStopVO){
-		console.log(busStopVO);
-		var arriveList = busStopVO.arriveList;//[{name : '199', time : 516000}];//busStopVO.list;
-		var html = '<table>\
-		<tr><td>'+busStopVO.name+'</td></tr>';
+	_r.busStopRowDetails = function(busStopVO, lineSet, arriveList){
+		var html = '<table><tr><td>'+busStopVO.name+'</td></tr>';
 		for(var i=0; i<arriveList.length; i++){
-			html += '<tr><td>'+arriveList[i].line_id+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
+			html += '<tr><td>'
+			+(lineSet[arriveList[i].line_id] ? lineSet[arriveList[i].line_id].name : '')
+			+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
 		}
-		html += '<tr><td></td></tr>\
-		</table>';
+		html += '<tr><td></td></tr></table>';
 		
 		return html;
 	};
