@@ -25,17 +25,18 @@ var ViewTools = ViewTools || (function () {
 				return '-';
 			}
 		}
-		return nextDate.getHours()+':'+nextDate.getMinutes();
+		var min = nextDate.getMinutes();
+		return nextDate.getHours()+':'+(min < 10 ? ('0'+min) : min);
 	};
 	
 	_r.busStopRowDetails = function(busStopVO, lineSet, arriveList){
-		var html = '<table><tr><td>'+busStopVO.name+'</td></tr>';
+		var html = '<table border="1"><tr><td style="text-align: center" colspan="2">'+busStopVO.name+'</td></tr>';
 		for(var i=0; i<arriveList.length; i++){
 			html += '<tr><td>'
 			+(lineSet[arriveList[i].line_id] ? lineSet[arriveList[i].line_id].name : '')
-			+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
+			+'</td><td>'+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
 		}
-		html += '<tr><td></td></tr></table>';
+		html += '</table>';
 		
 		return html;
 	};

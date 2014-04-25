@@ -1462,7 +1462,9 @@ var BusStopListView = BusStopListView || (function () {
 var BusStopView = BusStopView || (function () {
 
 	var _r = new Object();//extends
-	_r.div = '#BusStopView';
+	_r.div = 'BusStopView';
+	_r.div_left = _r.div+'_left';
+	_r.div_right = _r.div+'_right';
 	
 	_r.EMPTY_VIEW = 'BusStopView_EMPTY_VIEW';
 	
@@ -1541,18 +1543,32 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r.hide = function(){
-		$(BusStopView.div).hide();
+		$('#'+BusStopView.div).hide();
 	};
 
 	_r.showBusStop = function(busStop){
 		BusStopView.busStop = busStop;
 		var arriveList = ArriveController.getCurrentArrives(busStop);
 		LineController.getListFromCurrentRegion(function(lineSet){
-			$(BusStopView.div).html(ViewTools.busStopRowDetails(busStop, lineSet, arriveList));
-			$(BusStopView.div).show();
+			var html = 
+				BusStopView.leftButton()
+				+ BusStopView.rightButton()
+				+ ViewTools.busStopRowDetails(busStop, lineSet, arriveList)
+			;
+			$('#'+BusStopView.div).html(html);
+			$('#'+BusStopView.div).show();
 		});
 	};
 	
+	_r.leftButton = function(){
+		var ret = '<input type="button" id="" value="<"/>';
+		return ret;
+	};
+
+	_r.rightButton = function(){
+		var ret = '<input type="button" id="'+BusStopView.div_right+'" value=">"/>';
+		return ret;
+	};
 	_r.show = function(busStop){
 		if(busStop){
 			BusStopView.showBusStop(busStop);
@@ -1606,11 +1622,11 @@ var MapView = MapView || (function () {
 var UserListEmptyView = UserListEmptyView || (function () {
 
 	var _r = new Object();
-	_r.div = '#UserListEmptyView';
-	_r.div_form = '#UserListEmptyView_form';
-	_r.div_submit = '#UserListEmptyView_submit';
-	_r.div_items = '#UserListEmptyView_items';
-	_r.div_loading = '#UserListEmptyView_loading';
+	_r.div = 'UserListEmptyView';
+	_r.div_form = _r.div+'_form';
+	_r.div_submit = _r.div+'_submit';
+	_r.div_items = _r.div+'_items';
+	_r.div_loading = _r.div+'_loading';
 	_r.initialized = false;
 
 	_r.init = function(){
@@ -1628,21 +1644,21 @@ var UserListEmptyView = UserListEmptyView || (function () {
 	
 	_r.show = function(){
 		UserListEmptyView.init();
-		$(_r.div_items).html('');
-		$(_r.div_items).hide();
-		$(_r.div_loading).show();
+		$('#'+_r.div_items).html('');
+		$('#'+_r.div_items).hide();
+		$('#'+_r.div_loading).show();
 		BusStopController.searchNearest(function(rows){
-			$(_r.div_items).html(ViewTools.busStopRowList(rows, 'UserListEmptyView'));
-			$(_r.div_items).show();
-			$(_r.div_loading).hide();
+			$('#'+_r.div_items).html(ViewTools.busStopRowList(rows, 'UserListEmptyView'));
+			$('#'+_r.div_items).show();
+			$('#'+_r.div_loading).hide();
 		});
-		$(_r.div).show();
+		$('#'+_r.div).show();
 	};
 	
 
 	$(document).ready(function(){
-		$(_r.div_submit).click(function(e){
-			$(_r.div_form).serializeArray().map(function(input){
+		$('#'+_r.div_submit).click(function(e){
+			$('#'+_r.div_form).serializeArray().map(function(input){
 				UserListController.addToList(input.value);
 			}); 
 			return false;
@@ -1757,17 +1773,18 @@ var ViewTools = ViewTools || (function () {
 				return '-';
 			}
 		}
-		return nextDate.getHours()+':'+nextDate.getMinutes();
+		var min = nextDate.getMinutes();
+		return nextDate.getHours()+':'+(min < 10 ? ('0'+min) : min);
 	};
 	
 	_r.busStopRowDetails = function(busStopVO, lineSet, arriveList){
-		var html = '<table><tr><td>'+busStopVO.name+'</td></tr>';
+		var html = '<table border="1"><tr><td style="text-align: center" colspan="2">'+busStopVO.name+'</td></tr>';
 		for(var i=0; i<arriveList.length; i++){
 			html += '<tr><td>'
 			+(lineSet[arriveList[i].line_id] ? lineSet[arriveList[i].line_id].name : '')
-			+' '+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
+			+'</td><td>'+ViewTools.userFriendlyTime(arriveList[i].time)+'</td></tr>';
 		}
-		html += '<tr><td></td></tr></table>';
+		html += '</table>';
 		
 		return html;
 	};

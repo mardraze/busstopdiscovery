@@ -1,7 +1,9 @@
 var BusStopView = BusStopView || (function () {
 
 	var _r = new Object();//extends
-	_r.div = '#BusStopView';
+	_r.div = 'BusStopView';
+	_r.div_left = _r.div+'_left';
+	_r.div_right = _r.div+'_right';
 	
 	_r.EMPTY_VIEW = 'BusStopView_EMPTY_VIEW';
 	
@@ -80,16 +82,7 @@ var BusStopView = BusStopView || (function () {
 	};
 	
 	_r.hide = function(){
-		$(BusStopView.div).hide();
-	};
-
-	_r.showBusStop = function(busStop){
-		BusStopView.busStop = busStop;
-		var arriveList = ArriveController.getCurrentArrives(busStop);
-		LineController.getListFromCurrentRegion(function(lineSet){
-			$(BusStopView.div).html(ViewTools.busStopRowDetails(busStop, lineSet, arriveList));
-			$(BusStopView.div).show();
-		});
+		$('#'+BusStopView.div).hide();
 	};
 	
 	_r.show = function(busStop){
@@ -104,6 +97,39 @@ var BusStopView = BusStopView || (function () {
 				}
 			});
 		}
+		$('#'+BusStopView.div_left).click(BusStopView.leftClick);
+		$('#'+BusStopView.div_right).click(BusStopView.rightClick);
+	};
+
+	_r.leftClick = function(){
+		
+	};
+	_r.rightClick = function(){
+		
+	};
+	
+	_r.leftButton = function(){
+		var ret = '<input type="button" id="'+BusStopView.div_left+'" value="<"/>';
+		return ret;
+	};
+
+	_r.rightButton = function(){
+		var ret = '<input type="button" id="'+BusStopView.div_right+'" value=">"/>';
+		return ret;
+	};
+	
+	_r.showBusStop = function(busStop){
+		BusStopView.busStop = busStop;
+		var arriveList = ArriveController.getCurrentArrives(busStop);
+		LineController.getListFromCurrentRegion(function(lineSet){
+			var html = 
+				BusStopView.leftButton()
+				+ BusStopView.rightButton()
+				+ ViewTools.busStopRowDetails(busStop, lineSet, arriveList)
+			;
+			$('#'+BusStopView.div).html(html);
+			$('#'+BusStopView.div).show();
+		});
 	};
 	
 	return _r;
